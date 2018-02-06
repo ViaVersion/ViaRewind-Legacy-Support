@@ -1,4 +1,14 @@
+#Automatically put blaze powder in brewing stands for clients lower than 1.9
 brewing-stand-gui-fix: true
+#Automatically put lapis lazuli in enchanting tables for clients lower than 1.8
 enchanting-gui-fix: true
-vehicle-fix: true
+#fix the lily pad bounding box to prevent clients lower than 1.9 from glitching
 lily-pad-fix: true
+#Inform your players that they are using an outdated minecraft version
+#max-version specifies the maximum protocol version of players being notified. See http://wiki.vg/Protocol_version_numbers for protocol version numbers
+#interval can be set to JOIN to notify players when joining the server. If you set it to any integer number it will broadcast the message every x ticks.
+versioninfo:
+  active: false
+  max-version: 47
+  interval: JOIN
+  message: '&7[&6Info&7] This server is running Minecraft %version%. The best gameplay experience is only guaranteed if you are using this version.'
