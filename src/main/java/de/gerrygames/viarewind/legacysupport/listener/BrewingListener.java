@@ -18,7 +18,7 @@ public class BrewingListener implements Listener {
 		if (!(e.getInventory() instanceof BrewerInventory)) return;
 		Player player = (Player) e.getPlayer();
 		int version = Via.getAPI().getPlayerVersion(player);
-		if (version>5) return;
+		if (version>79) return;
 		PlayerInventory playerInventory = player.getInventory();
 		ItemStack blazePowder = new ItemStack(Material.BLAZE_POWDER);
 		int amount = 0;
