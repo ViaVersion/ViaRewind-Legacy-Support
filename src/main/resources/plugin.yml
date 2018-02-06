@@ -1,0 +1,8 @@
+name: ViaRewind-Legacy-Support
+version: ${project.version}
+main: de.gerrygames.viarewind.legacysupport.BukkitPlugin
+
+authors: [Gerrygames]
+website: https://github.com/Gerrygames
+
+depend: [ViaVersion]
