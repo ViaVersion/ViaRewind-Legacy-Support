@@ -1,42 +1,72 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
 import org.bukkit.Material;
+import org.bukkit.block.BrewingStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import us.myles.ViaVersion.api.Via;
 
 public class BrewingListener implements Listener {
 
-	@EventHandler
-	public void onInventoryOpen(InventoryOpenEvent e) {
-		if (!(e.getInventory() instanceof BrewerInventory)) return;
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	public void onPlayerInteract(PlayerInteractEvent e) {
+		if (!e.hasBlock() || e.getClickedBlock().getType()!=Material.BREWING_STAND) return;
 		Player player = (Player) e.getPlayer();
 		int version = Via.getAPI().getPlayerVersion(player);
 		if (version>79) return;
-		PlayerInventory playerInventory = player.getInventory();
 		ItemStack blazePowder = new ItemStack(Material.BLAZE_POWDER);
-		int amount = 0;
-		for (int i = 0; i<playerInventory.getSize(); i++) {
-			ItemStack item = playerInventory.getItem(i);
-			if (item==null || !item.isSimilar(blazePowder)) continue;
-			if (amount + item.getAmount() > 64) {
-				item.setAmount(amount + item.getAmount() - 64);
-				amount = 64;
+		ItemStack playerItem = e.getItem();
+		if (playerItem==null) playerItem = new ItemStack(Material.AIR);
+		BrewingStand brewingStand = (BrewingStand)e.getClickedBlock().getState();
+		BrewerInventory inventory = brewingStand.getInventory();
+		ItemStack fuel = inventory.getFuel();
+		if (fuel==null) fuel = new ItemStack(Material.AIR);
+
+		if (e.getAction()==Action.RIGHT_CLICK_BLOCK) {
+			if (!blazePowder.isSimilar(playerItem)) return;
+			if (fuel.getType()!=Material.AIR && !fuel.isSimilar(playerItem)) return;
+			if (fuel.getAmount()>=64) return;
+			int amount = player.isSneaking() ? Math.min(playerItem.getAmount(), 64-fuel.getAmount()) : 1;
+			if (playerItem.getAmount()==amount) {
+				playerItem = new ItemStack(Material.AIR);
 			} else {
-				amount += item.getAmount();
-				item = new ItemStack(Material.AIR);
+				playerItem.setAmount(playerItem.getAmount()-amount);
 			}
-			playerInventory.setItem(i, item);
-			if (amount==64) break;
+			if (fuel.getType()==Material.AIR) {
+				fuel = new ItemStack(Material.BLAZE_POWDER, amount);
+			} else {
+				fuel.setAmount(fuel.getAmount()+amount);
+			}
+			inventory.setFuel(fuel);
+		} else {
+			if (!blazePowder.isSimilar(fuel)) return;
+			if (!blazePowder.isSimilar(playerItem) && playerItem.getType()!=Material.AIR) return;
+			if (playerItem.getAmount()>=64) return;
+			int amount = player.isSneaking() ? Math.min(fuel.getAmount(), 64-playerItem.getAmount()) : 1;
+			if (fuel.getAmount()==amount) {
+				fuel = new ItemStack(Material.AIR);
+			} else {
+				fuel.setAmount(fuel.getAmount()-amount);
+			}
+			if (playerItem.getType()==Material.AIR) {
+				playerItem = new ItemStack(Material.BLAZE_POWDER, amount);
+			} else {
+				playerItem.setAmount(playerItem.getAmount()+amount);
+			}
+			inventory.setFuel(fuel);
 		}
-		if (amount==0) return;
-		BrewerInventory inventory = (BrewerInventory) e.getInventory();
-		blazePowder.setAmount(amount);
-		inventory.setFuel(blazePowder);
+		if (e.getHand()==EquipmentSlot.HAND) {
+			player.getInventory().setItemInMainHand(playerItem);
+		} else {
+			player.getInventory().setItemInOffHand(playerItem);
+		}
+		e.setCancelled(true);
 	}
 }

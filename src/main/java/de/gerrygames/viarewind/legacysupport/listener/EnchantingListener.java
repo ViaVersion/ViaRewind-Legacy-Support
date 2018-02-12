@@ -17,8 +17,7 @@ public class EnchantingListener implements Listener {
 	public void onInventoryOpen(InventoryOpenEvent e) {
 		if (!(e.getInventory() instanceof EnchantingInventory)) return;
 		Player player = (Player) e.getPlayer();
-		int version = Via.getAPI().getPlayerVersion(player);
-		if (version>5) return;
+		if (Via.getAPI().getPlayerVersion(player)>5) return;
 		PlayerInventory playerInventory = player.getInventory();
 		ItemStack lapis = new ItemStack(Material.INK_SACK, 1, (short) 4);
 		int amount = 0;
