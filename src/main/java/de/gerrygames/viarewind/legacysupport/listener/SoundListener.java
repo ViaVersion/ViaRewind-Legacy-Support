@@ -35,7 +35,6 @@ public class SoundListener implements Listener {
 
 			}, BukkitPlugin.getInstance());
 		} catch (Exception ex) {
-			System.out.println("Using old Event");
 			Bukkit.getPluginManager().registerEvents(new Listener() {
 
 				@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
