@@ -75,7 +75,13 @@ public class SoundListener implements Listener {
 			Method getBlock = blockData.getClass().getMethod("getBlock");
 			getBlock.setAccessible(true);
 			Object nmsBlock = getBlock.invoke(blockData);
-			Object soundType = nmsBlock.getClass().getMethod("getStepSound").invoke(nmsBlock);
+			Method getStepSound;
+			try {
+				getStepSound = nmsBlock.getClass().getMethod("getStepSound");
+			} catch (NoSuchMethodException ex) {
+				getStepSound = nmsBlock.getClass().getMethod("w");
+			}
+			Object soundType = getStepSound.invoke(nmsBlock);
 
 			Object soundEffect = soundType.getClass().getMethod("e").invoke(soundType);
 			float volume = (float) soundType.getClass().getMethod("a").invoke(soundType);
