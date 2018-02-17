@@ -14,6 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import us.myles.ViaVersion.api.Via;
 
@@ -57,12 +58,22 @@ public class SoundListener implements Listener {
 		float volume = 0.2f;
 		float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
 		Location loc = player.getLocation();
+		playSound(loc, Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, volume, pitch, 16, 47);
+	}
 
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+	private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
+		float volume = 0.1f;
+		float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
+		playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, volume, pitch, 16, 47);
+	}
+
+	private static void playSound(Location loc, Sound sound, SoundCategory category, float volume, float pitch, double dist, int version) {
 		Bukkit.getOnlinePlayers().stream()
-				.filter(p -> p.getWorld()==player.getWorld())
-				.filter(p -> p.getLocation().distanceSquared(loc) < 16 * 16)
-				.filter(p -> Via.getAPI().getPlayerVersion(p) <= 47)
-				.forEach(p -> p.playSound(loc, Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, volume, pitch));
+				.filter(p -> p.getWorld()==loc.getWorld())
+				.filter(p -> p.getLocation().distanceSquared(loc) < dist * dist)
+				.filter(p -> Via.getAPI().getPlayerVersion(p) <= version)
+				.forEach(p -> p.playSound(loc, sound, category, volume, pitch));
 	}
 
 	private static void playBlockPlaceSound(Player player, Block block) {
@@ -85,7 +96,7 @@ public class SoundListener implements Listener {
 
 			Object soundEffect = soundType.getClass().getMethod("e").invoke(soundType);
 			float volume = (float) soundType.getClass().getMethod("a").invoke(soundType);
-			float pitch = (float) soundType.getClass().getMethod("a").invoke(soundType);
+			float pitch = (float) soundType.getClass().getMethod("b").invoke(soundType);
 			Object soundCategory = Enum.class.getMethod("valueOf", Class.class, String.class).invoke(null, NMSReflection.getNMSClass("SoundCategory"), "BLOCKS");
 
 			volume = (volume + 1.0f) / 2.0f;
