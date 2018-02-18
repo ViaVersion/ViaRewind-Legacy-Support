@@ -3,6 +3,7 @@ package de.gerrygames.viarewind.legacysupport;
 import de.gerrygames.viarewind.legacysupport.injector.LilyPadFixer;
 import de.gerrygames.viarewind.legacysupport.listener.BounceListener;
 import de.gerrygames.viarewind.legacysupport.listener.BrewingListener;
+import de.gerrygames.viarewind.legacysupport.listener.ElytraListener;
 import de.gerrygames.viarewind.legacysupport.listener.EnchantingListener;
 import de.gerrygames.viarewind.legacysupport.listener.SoundListener;
 import de.gerrygames.viarewind.legacysupport.versioninfo.VersionInformer;
@@ -32,6 +33,8 @@ public class BukkitPlugin extends JavaPlugin {
 				Bukkit.getPluginManager().registerEvents(new SoundListener(), this);
 			if (ProtocolRegistry.SERVER_PROTOCOL>5 && config.getBoolean("slime-fix"))
 				Bukkit.getPluginManager().registerEvents(new BounceListener(), this);
+			if (ProtocolRegistry.SERVER_PROTOCOL>76 && config.getBoolean("elytra-fix"))
+				Bukkit.getPluginManager().registerEvents(new ElytraListener(), this);
 			if (config.getBoolean("versioninfo.active")) new VersionInformer();
 		});
 	}

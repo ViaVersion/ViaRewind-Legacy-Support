@@ -8,6 +8,8 @@ lily-pad-fix: true
 sound-fix: true
 #If set to true, this plugin will apply velocity to 1.7 if they fall onto slime blocks
 slime-fix: true
+#If this plugin should apply velocity to 1.8 and lower clients to emulate elytra flight
+elytra-fix: true
 #Inform your players that they are using an outdated minecraft version
 #max-version specifies the maximum protocol version of players being notified. See http://wiki.vg/Protocol_version_numbers for protocol version numbers
 #interval can be set to JOIN to notify players when joining the server. If you set it to any integer number it will broadcast the message every x ticks.
