@@ -21,6 +21,13 @@ import us.myles.ViaVersion.api.Via;
 import java.lang.reflect.Method;
 
 public class SoundListener implements Listener {
+	private static boolean isSoundCategory = false;
+	static {
+		try {
+			Class.forName("org.bukkit.SoundCategory");
+			isSoundCategory = true;
+		} catch (ClassNotFoundException ignored) {}
+	}
 
 	public SoundListener() {
 		try {
@@ -58,22 +65,28 @@ public class SoundListener implements Listener {
 		float volume = 0.2f;
 		float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
 		Location loc = player.getLocation();
-		playSound(loc, Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, volume, pitch, 16, 47);
+		playSound(loc, Sound.ENTITY_ITEM_PICKUP, "PLAYERS", volume, pitch, 16, 47);
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
 		float volume = 0.1f;
 		float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
-		playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, volume, pitch, 16, 47);
+		playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, "PLAYERS", volume, pitch, 16, 47);
 	}
 
-	private static void playSound(Location loc, Sound sound, SoundCategory category, float volume, float pitch, double dist, int version) {
+	private static void playSound(Location loc, Sound sound, String category, float volume, float pitch, double dist, int version) {
 		Bukkit.getOnlinePlayers().stream()
 				.filter(p -> p.getWorld()==loc.getWorld())
 				.filter(p -> p.getLocation().distanceSquared(loc) < dist * dist)
 				.filter(p -> Via.getAPI().getPlayerVersion(p) <= version)
-				.forEach(p -> p.playSound(loc, sound, category, volume, pitch));
+				.forEach(p -> {
+					if (isSoundCategory) {
+						p.playSound(loc, sound, SoundCategory.valueOf(category), volume, pitch);
+					} else {
+						p.playSound(loc, sound, volume, pitch);
+					}
+				});
 	}
 
 	private static void playBlockPlaceSound(Player player, Block block) {
