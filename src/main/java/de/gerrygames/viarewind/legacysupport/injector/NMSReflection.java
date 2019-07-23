@@ -7,7 +7,7 @@ public class NMSReflection {
 	private static String version;
 
 	public static String getVersion() {
-		return version==null ? version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] : version;
+		return version == null ? version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] : version;
 	}
 
 	public static Class getNMSClass(String name) {

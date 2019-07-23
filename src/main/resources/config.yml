@@ -4,6 +4,8 @@ brewing-stand-gui-fix: true
 enchanting-gui-fix: true
 #Fix the lily pad bounding box to prevent clients lower than 1.9 from glitching
 lily-pad-fix: true
+#Fix the ladder bounding box to prevent clients lower than 1.9 from glitching
+ladder-fix: true
 #If set to true, this plugin will play sounds for 1.8 and lower that got clientside on 1.9 and higher
 sound-fix: true
 #If set to true, this plugin will apply velocity to 1.7 if they fall onto slime blocks
