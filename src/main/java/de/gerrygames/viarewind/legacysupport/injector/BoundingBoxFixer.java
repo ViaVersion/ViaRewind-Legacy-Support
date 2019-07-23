@@ -27,9 +27,7 @@ public class BoundingBoxFixer {
 
 			Field boundingBoxNorthField, boundingBoxSouthField, boundingBoxWestField, boundingBoxEastField;
 
-			if (ProtocolRegistry.SERVER_PROTOCOL < 107) {
-				return;
-			} else if (ProtocolRegistry.SERVER_PROTOCOL <= 340) {
+			if (ProtocolRegistry.SERVER_PROTOCOL <= 340) {
 				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "b");
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "c");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "d");
