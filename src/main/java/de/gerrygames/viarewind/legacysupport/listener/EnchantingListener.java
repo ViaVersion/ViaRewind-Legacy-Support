@@ -13,13 +13,16 @@ import us.myles.ViaVersion.api.Via;
 
 public class EnchantingListener implements Listener {
 
+    private final boolean newMaterialNames = Material.getMaterial("LAPIS_LAZULI") != null;
+    private final Material lapisMaterial = newMaterialNames ? Material.LAPIS_LAZULI : Material.getMaterial("INK_SACK");
+
 	@EventHandler
 	public void onInventoryOpen(InventoryOpenEvent e) {
 		if (!(e.getInventory() instanceof EnchantingInventory)) return;
 		Player player = (Player) e.getPlayer();
 		if (Via.getAPI().getPlayerVersion(player)>5) return;
 		PlayerInventory playerInventory = player.getInventory();
-		ItemStack lapis = new ItemStack(Material.INK_SACK, 1, (short) 4);
+		ItemStack lapis = newMaterialNames ? new ItemStack(lapisMaterial) : new ItemStack(lapisMaterial, 1, (short) 4);
 		int amount = 0;
 		for (int i = 0; i<playerInventory.getSize(); i++) {
 			ItemStack item = playerInventory.getItem(i);
