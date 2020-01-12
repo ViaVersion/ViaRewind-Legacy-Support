@@ -13,6 +13,15 @@ import java.util.Map;
 public class ReflectionAPI {
 	private static Map<String, Field> fields = new HashMap<>();
 	private static Map<String, Method> methods = new HashMap<>();
+	private static boolean staticFinalModificationBlocked;
+
+	static {
+	    try {
+            Field.class.getDeclaredField("modifiers");
+        }  catch (NoSuchFieldException ex) {
+	        staticFinalModificationBlocked = true;
+        }
+    }
 
 	public static Field getField(Class clazz, String fieldname) {
 		String key = clazz.getName() + ":" + fieldname;
@@ -41,7 +50,25 @@ public class ReflectionAPI {
 	public static void setFieldNotFinal(Field field) {
 		int modifiers = field.getModifiers();
 		if (!Modifier.isFinal(modifiers)) return;
-		setValuePrintException(Field.class, field, "modifiers", modifiers & ~Modifier.FINAL);
+
+		if (staticFinalModificationBlocked) {
+           try {
+               Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+               getDeclaredFields0.setAccessible(true);
+               Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
+               for (Field classField : fields) {
+                   if ("modifiers".equals(classField.getName())) {
+                       classField.setAccessible(true);
+                       classField.set(field, modifiers & ~Modifier.FINAL);
+                       break;
+                   }
+               }
+           } catch (ReflectiveOperationException ex) {
+               ex.printStackTrace();
+           }
+        } else {
+            setValuePrintException(Field.class, field, "modifiers", modifiers & ~Modifier.FINAL);
+        }
 	}
 
 	public static <E> Constructor<E> getEmptyConstructor(Class<E> clazz) {
