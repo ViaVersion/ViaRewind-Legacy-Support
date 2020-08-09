@@ -1,12 +1,7 @@
 package de.gerrygames.viarewind.legacysupport;
 
 import de.gerrygames.viarewind.legacysupport.injector.BoundingBoxFixer;
-import de.gerrygames.viarewind.legacysupport.listener.AreaEffectCloudListener;
-import de.gerrygames.viarewind.legacysupport.listener.BounceListener;
-import de.gerrygames.viarewind.legacysupport.listener.BrewingListener;
-import de.gerrygames.viarewind.legacysupport.listener.ElytraListener;
-import de.gerrygames.viarewind.legacysupport.listener.EnchantingListener;
-import de.gerrygames.viarewind.legacysupport.listener.SoundListener;
+import de.gerrygames.viarewind.legacysupport.listener.*;
 import de.gerrygames.viarewind.legacysupport.versioninfo.VersionInformer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -43,6 +38,8 @@ public class BukkitPlugin extends JavaPlugin {
 					Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
 				if (ProtocolRegistry.SERVER_PROTOCOL > 76 && config.getBoolean("elytra-fix"))
 					Bukkit.getPluginManager().registerEvents(new ElytraListener(), BukkitPlugin.this);
+				if (ProtocolRegistry.SERVER_PROTOCOL > 392 && config.getBoolean("riptide-fix"))
+					Bukkit.getPluginManager().registerEvents(new RiptideListener(), BukkitPlugin.this);
 				if (ProtocolRegistry.SERVER_PROTOCOL > 54 && config.getBoolean("area-effect-cloud-particles"))
 					Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(), BukkitPlugin.this);
 				if (config.getBoolean("versioninfo.active"))
