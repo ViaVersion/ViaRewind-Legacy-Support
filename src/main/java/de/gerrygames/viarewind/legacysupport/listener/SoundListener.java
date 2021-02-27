@@ -122,13 +122,13 @@ public class SoundListener implements Listener {
 			Method pitchMethod;
 
 			try {
-				soundEffectMethod = soundType.getClass().getMethod("e");
-				volumeMethod = soundType.getClass().getMethod("a");
-				pitchMethod = soundType.getClass().getMethod("b");
-			} catch (NoSuchMethodException ex) {
 				soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
 				volumeMethod = soundType.getClass().getMethod("getVolume");
 				pitchMethod = soundType.getClass().getMethod("getPitch");
+			} catch (NoSuchMethodException ex) {
+				soundEffectMethod = soundType.getClass().getMethod("e");
+				volumeMethod = soundType.getClass().getMethod("a");
+				pitchMethod = soundType.getClass().getMethod("b");
 			}
 
 			Object soundEffect = soundEffectMethod.invoke(soundType);
