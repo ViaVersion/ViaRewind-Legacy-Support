@@ -12,6 +12,8 @@ sound-fix: true
 slime-fix: true
 #If this plugin should apply velocity to 1.8 and lower clients to emulate elytra flight
 elytra-fix: true
+#If this plugin should apply velocity to 1.12 and lower clients to emulate riptide flight
+riptide-fix: true
 #
 area-effect-cloud-particles: true
 #Inform your players that they are using an outdated minecraft version
