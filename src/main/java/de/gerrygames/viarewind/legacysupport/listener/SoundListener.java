@@ -117,9 +117,23 @@ public class SoundListener implements Listener {
 				soundType = getStepSound.invoke(nmsBlock, blockData);
 			}
 
-			Object soundEffect = soundType.getClass().getMethod("e").invoke(soundType);
-			float volume = (float) soundType.getClass().getMethod("a").invoke(soundType);
-			float pitch = (float) soundType.getClass().getMethod("b").invoke(soundType);
+			Method soundEffectMethod;
+			Method volumeMethod;
+			Method pitchMethod;
+
+			try {
+				soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
+				volumeMethod = soundType.getClass().getMethod("getVolume");
+				pitchMethod = soundType.getClass().getMethod("getPitch");
+			} catch (NoSuchMethodException ex) {
+				soundEffectMethod = soundType.getClass().getMethod("e");
+				volumeMethod = soundType.getClass().getMethod("a");
+				pitchMethod = soundType.getClass().getMethod("b");
+			}
+
+			Object soundEffect = soundEffectMethod.invoke(soundType);
+			float volume = (float) volumeMethod.invoke(soundType);
+			float pitch = (float) pitchMethod.invoke(soundType);
 			Object soundCategory = Enum.valueOf(NMSReflection.getNMSClass("SoundCategory"), "BLOCKS");
 
 			volume = (volume + 1.0f) / 2.0f;
