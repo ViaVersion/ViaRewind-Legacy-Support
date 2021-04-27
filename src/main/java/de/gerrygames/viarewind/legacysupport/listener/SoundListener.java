@@ -1,5 +1,6 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
+import com.viaversion.viaversion.api.Via;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.injector.NMSReflection;
 import org.bukkit.Bukkit;
@@ -16,7 +17,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
-import us.myles.ViaVersion.api.Via;
 
 import java.lang.reflect.Method;
 

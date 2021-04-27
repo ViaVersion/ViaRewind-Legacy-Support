@@ -1,7 +1,7 @@
 package de.gerrygames.viarewind.legacysupport.injector;
 
+import com.viaversion.viaversion.api.Via;
 import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
-import us.myles.ViaVersion.api.Via;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

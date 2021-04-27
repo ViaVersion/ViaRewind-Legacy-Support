@@ -1,12 +1,12 @@
 package de.gerrygames.viarewind.legacysupport.versioninfo;
 
+import com.viaversion.viaversion.api.Via;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import us.myles.ViaVersion.api.Via;
 
 public class VersionInformer implements Listener {
 	private String message;

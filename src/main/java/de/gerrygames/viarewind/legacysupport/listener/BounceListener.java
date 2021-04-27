@@ -1,5 +1,6 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
+import com.viaversion.viaversion.api.Via;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -7,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
-import us.myles.ViaVersion.api.Via;
 
 public class BounceListener implements Listener {
 

@@ -1,5 +1,6 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
+import com.viaversion.viaversion.api.Via;
 import org.bukkit.Material;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.entity.Player;
@@ -11,7 +12,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import us.myles.ViaVersion.api.Via;
 
 public class BrewingListener implements Listener {
 

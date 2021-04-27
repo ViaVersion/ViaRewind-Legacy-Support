@@ -1,5 +1,6 @@
 package de.gerrygames.viarewind.legacysupport;
 
+import com.viaversion.viaversion.api.Via;
 import de.gerrygames.viarewind.legacysupport.injector.BoundingBoxFixer;
 import de.gerrygames.viarewind.legacysupport.listener.AreaEffectCloudListener;
 import de.gerrygames.viarewind.legacysupport.listener.BounceListener;
@@ -12,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import us.myles.ViaVersion.api.Via;
 
 public class BukkitPlugin extends JavaPlugin {
 	private static BukkitPlugin instance;

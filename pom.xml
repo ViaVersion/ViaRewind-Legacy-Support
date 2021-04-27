@@ -6,7 +6,7 @@
 
     <groupId>de.gerrygames</groupId>
     <artifactId>viarewind-legacy-support</artifactId>
-    <version>1.3.4</version>
+    <version>1.4.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -40,9 +40,9 @@
 
         <!-- ViaVersion -->
         <dependency>
-            <groupId>us.myles</groupId>
-            <artifactId>viaversion</artifactId>
-            <version>3.3.0-21w15a</version>
+            <groupId>com.viaversion</groupId>
+            <artifactId>viaversion-api</artifactId>
+            <version>4.0.0-21w16a</version>
             <scope>provided</scope>
         </dependency>
 
