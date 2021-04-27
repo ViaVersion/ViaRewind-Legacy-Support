@@ -1,7 +1,7 @@
 package de.gerrygames.viarewind.legacysupport.injector;
 
 import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
-import us.myles.ViaVersion.api.protocol.ProtocolRegistry;
+import us.myles.ViaVersion.api.Via;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -27,12 +27,13 @@ public class BoundingBoxFixer {
 
 			Field boundingBoxNorthField, boundingBoxSouthField, boundingBoxWestField, boundingBoxEastField;
 
-			if (ProtocolRegistry.SERVER_PROTOCOL <= 340) {
+			int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
+			if (serverProtocol <= 340) {
 				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "b");
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "c");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "d");
 				boundingBoxNorthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "e");
-			} else if (ProtocolRegistry.SERVER_PROTOCOL <= 404) {
+			} else if (serverProtocol <= 404) {
 				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "c");
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "o");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "p");
