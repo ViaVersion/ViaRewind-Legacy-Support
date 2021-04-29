@@ -105,7 +105,7 @@ public class SoundListener implements Listener {
 			} catch (NoSuchMethodException ex) {
 				try {
 					getStepSound = nmsBlock.getClass().getMethod("getStepSound");
-				} catch (NoSuchMethodError ex2) {
+				} catch (NoSuchMethodException ex2) {
 					getStepSound = nmsBlock.getClass().getMethod("w");
 				}
 			}
