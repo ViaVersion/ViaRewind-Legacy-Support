@@ -34,7 +34,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.10</version>
+            <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.viaversion</groupId>
             <artifactId>viaversion-api</artifactId>
-            <version>4.0.0-21w16a</version>
+            <version>4.0.0-1.17-rc2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
