@@ -100,7 +100,7 @@ public class BoundingBoxFixer {
 		Method wrapMethod = Class.forName(doubleArrayListClass).getMethod("wrap", double[].class);
 
 		for (int i = 0; i < 3; i++) {
-			double[] array = {values[i * 2], values[i * 2 + 1]};
+			double[] array = {values[i], values[i + 3]};
 			Field field = doubleListFields[i];
 			field.setAccessible(true);
 			field.set(voxelShapeArray, wrapMethod.invoke(null, (Object) array));
