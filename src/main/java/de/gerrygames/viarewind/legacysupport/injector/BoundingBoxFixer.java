@@ -5,9 +5,11 @@ import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 public class BoundingBoxFixer {
 
@@ -67,7 +69,27 @@ public class BoundingBoxFixer {
 			return;
 		}
 
+		// Tuinity support
+		if (boundingBox.getClass().getSimpleName().equals("AABBVoxelShape")) {
+			setAABBVoxelShape(boundingBox, values);
+			return;
+		}
+
 		throw new IllegalStateException("Unknown bounding box type: " + boundingBox.getClass().getName());
+	}
+
+	private static void setAABBVoxelShape(Object boundingBox, double[] values) throws ReflectiveOperationException {
+		for (Field field : boundingBox.getClass().getFields()) {
+			// Set data for internally used AxisAlignedBB
+			if (field.getType().getSimpleName().equals("AxisAlignedBB")) {
+				setBoundingBox(field.get(boundingBox), values);
+			}
+			// Clear the cache
+			if (field.getType().getSimpleName().equals("DoubleList")) {
+				Object doubleList = field.get(boundingBox);
+				doubleList.getClass().getMethod("clear").invoke(doubleList);
+			}
+		}
 	}
 
 	private static void setAxisAlignedBB(Object boundingBox, double[] values) throws ReflectiveOperationException {
