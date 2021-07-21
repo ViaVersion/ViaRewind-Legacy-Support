@@ -93,8 +93,11 @@ public class SoundListener implements Listener {
 		try {
 			World world = block.getWorld();
 			Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
-			Class blockPositionClass = NMSReflection.getNMSClass("BlockPosition");
-			Object blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
+			Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
+			Object blockPosition = null;
+			if (blockPositionClass != null) {
+				blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
+			}
 			Object blockData = nmsWorld.getClass().getSuperclass().getMethod("getType", blockPositionClass).invoke(nmsWorld, blockPosition);
 			Method getBlock = blockData.getClass().getMethod("getBlock");
 			getBlock.setAccessible(true);
@@ -134,7 +137,7 @@ public class SoundListener implements Listener {
 			Object soundEffect = soundEffectMethod.invoke(soundType);
 			float volume = (float) volumeMethod.invoke(soundType);
 			float pitch = (float) pitchMethod.invoke(soundType);
-			Object soundCategory = Enum.valueOf(NMSReflection.getNMSClass("SoundCategory"), "BLOCKS");
+			Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
 
 			volume = (volume + 1.0f) / 2.0f;
 			pitch *= 0.8;
@@ -147,7 +150,7 @@ public class SoundListener implements Listener {
 
 	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch) {
 		try {
-			Object packet = NMSReflection.getNMSClass("PacketPlayOutNamedSoundEffect").getConstructor(
+			Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
 					soundEffect.getClass(), soundCategory.getClass(),
 					double.class, double.class, double.class,
 					float.class, float.class

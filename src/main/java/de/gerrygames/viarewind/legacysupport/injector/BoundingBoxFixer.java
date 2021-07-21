@@ -15,7 +15,7 @@ public class BoundingBoxFixer {
 
 	public static void fixLilyPad() {
 		try {
-			Class<?> blockWaterLilyClass = NMSReflection.getNMSClass("BlockWaterLily");
+			Class<?> blockWaterLilyClass = NMSReflection.getNMSBlock("BlockWaterLily");
 			Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockWaterLilyClass, "a");
 			Object boundingBox = boundingBoxField.get(null);
 
@@ -27,7 +27,7 @@ public class BoundingBoxFixer {
 
 	public static void fixLadder() {
 		try {
-			Class<?> blockLadderClass = NMSReflection.getNMSClass("BlockLadder");
+			Class<?> blockLadderClass = NMSReflection.getNMSBlock("BlockLadder");
 
 			Field boundingBoxNorthField, boundingBoxSouthField, boundingBoxWestField, boundingBoxEastField;
 
@@ -42,11 +42,16 @@ public class BoundingBoxFixer {
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "o");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "p");
 				boundingBoxNorthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "q");
-			} else {
+			} else if (serverProtocol <= 754) {
 				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "c");
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "d");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "e");
 				boundingBoxNorthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "f");
+			} else {
+				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "d");
+				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "e");
+				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "f");
+				boundingBoxNorthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "g");
 			}
 
 			setBoundingBox(boundingBoxEastField.get(null), 0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
