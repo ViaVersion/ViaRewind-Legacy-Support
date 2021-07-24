@@ -7,6 +7,7 @@ import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.stream.Stream;
@@ -99,7 +100,7 @@ public class BoundingBoxFixer {
 
 	private static void setAxisAlignedBB(Object boundingBox, double[] values) throws ReflectiveOperationException {
 		Field[] doubleFields = Arrays.stream(boundingBox.getClass().getDeclaredFields())
-				.filter(f -> f.getType() == double.class)
+				.filter(f -> f.getType() == double.class && !Modifier.isStatic(f.getModifiers()))
 				.toArray(Field[]::new);
 
 		if (doubleFields.length < 6) {
