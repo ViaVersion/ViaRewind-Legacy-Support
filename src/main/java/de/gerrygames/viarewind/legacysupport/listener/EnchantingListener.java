@@ -1,6 +1,7 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +11,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.util.Map;
 
 public class EnchantingListener implements Listener {
 
@@ -54,6 +57,12 @@ public class EnchantingListener implements Listener {
 		ItemStack item = inventory.getSecondary();
 		if (item==null || item.getType()==Material.AIR) return;
 		inventory.setSecondary(new ItemStack(Material.AIR));
-		playerInventory.addItem(item);
+		Map<Integer, ItemStack> remaining = playerInventory.addItem(item);
+		if (!remaining.isEmpty()) {
+			Location location = player.getLocation();
+			for (ItemStack value : remaining.values()) {
+				player.getWorld().dropItemNaturally(location, value);
+			}
+		}
 	}
 }
