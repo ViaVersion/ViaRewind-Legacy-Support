@@ -61,7 +61,7 @@ public class EnchantingListener implements Listener {
 		if (!remaining.isEmpty()) {
 			Location location = player.getLocation();
 			for (ItemStack value : remaining.values()) {
-				player.getWorld().dropItemNaturally(location, value);
+				player.getWorld().dropItem(location, value);
 			}
 		}
 	}
