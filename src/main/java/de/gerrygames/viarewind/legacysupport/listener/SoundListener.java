@@ -3,6 +3,8 @@ package de.gerrygames.viarewind.legacysupport.listener;
 import com.viaversion.viaversion.api.Via;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.injector.NMSReflection;
+import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
+import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -98,20 +100,26 @@ public class SoundListener implements Listener {
 			if (blockPositionClass != null) {
 				blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
 			}
-			Object blockData = nmsWorld.getClass().getSuperclass().getMethod("getType", blockPositionClass).invoke(nmsWorld, blockPosition);
-			Method getBlock = blockData.getClass().getMethod("getBlock");
+			Method getTypeMethod = ReflectionAPI.pickMethod(
+					nmsWorld.getClass(),
+					new MethodSignature("getType", blockPositionClass),
+					new MethodSignature("a_", blockPositionClass) // 1.18.2
+			);
+			Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
+			Method getBlock = ReflectionAPI.pickMethod(
+					blockData.getClass(),
+					new MethodSignature("getBlock"),
+					new MethodSignature("b") // 1.18.2
+			);
 			getBlock.setAccessible(true);
 			Object nmsBlock = getBlock.invoke(blockData);
-			Method getStepSound;
-			try {
-				getStepSound = nmsBlock.getClass().getMethod("getStepSound", blockData.getClass());
-			} catch (NoSuchMethodException ex) {
-				try {
-					getStepSound = nmsBlock.getClass().getMethod("getStepSound");
-				} catch (NoSuchMethodException ex2) {
-					getStepSound = nmsBlock.getClass().getMethod("w");
-				}
-			}
+			Method getStepSound = ReflectionAPI.pickMethod(
+					nmsBlock.getClass(),
+                    new MethodSignature("m", blockData.getClass()), // 1.18.2
+                    new MethodSignature("w"), // 1.18?
+					new MethodSignature("getStepSound", blockData.getClass()), // 1.17
+					new MethodSignature("getStepSound") // pre 1.17
+			);
 
 			Object soundType;
 			if (getStepSound.getParameterCount() == 0) {
