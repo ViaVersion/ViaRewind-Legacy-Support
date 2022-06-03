@@ -1,6 +1,8 @@
 package de.gerrygames.viarewind.legacysupport.injector;
 
 import com.viaversion.viaversion.api.Via;
+import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
+import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -120,7 +122,11 @@ public class NMSReflection {
                         .orElseThrow(() -> new ReflectiveOperationException("Failed to find PlayerConnection field in EntityPlayer"));
             }
             Object playerConnection = playerConnectionField.get(nmsPlayer);
-            playerConnection.getClass().getMethod("sendPacket", getPacketClass()).invoke(playerConnection, packet);
+            ReflectionAPI.pickMethod(
+                    playerConnection.getClass(),
+                    new MethodSignature("sendPacket", getPacketClass()),
+                    new MethodSignature("a", getPacketClass())
+            ).invoke(playerConnection, packet);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
