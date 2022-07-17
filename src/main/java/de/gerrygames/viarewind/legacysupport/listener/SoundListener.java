@@ -150,7 +150,7 @@ public class SoundListener implements Listener {
 			volume = (volume + 1.0f) / 2.0f;
 			pitch *= 0.8;
 
-			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch, world.getSeed());
+			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch, 1);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -183,7 +183,7 @@ public class SoundListener implements Listener {
 
 				NMSReflection.sendPacket(player, packet);
 			} catch (Exception ex2) {
-				ex.printStackTrace();
+				ex2.printStackTrace();
 			}
 		}
 	}
