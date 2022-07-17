@@ -150,13 +150,13 @@ public class SoundListener implements Listener {
 			volume = (volume + 1.0f) / 2.0f;
 			pitch *= 0.8;
 
-			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch);
+			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch, world.getSeed());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 
-	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch) {
+	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch, long seed) {
 		try {
 			Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
 					soundEffect.getClass(), soundCategory.getClass(),
@@ -170,7 +170,21 @@ public class SoundListener implements Listener {
 
 			NMSReflection.sendPacket(player, packet);
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			try {
+				Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
+						soundEffect.getClass(), soundCategory.getClass(),
+						double.class, double.class, double.class,
+						float.class, float.class, long.class
+				).newInstance(
+						soundEffect, soundCategory,
+						x, y, z,
+						volume, pitch, seed
+				);
+
+				NMSReflection.sendPacket(player, packet);
+			} catch (Exception ex2) {
+				ex.printStackTrace();
+			}
 		}
 	}
 }
