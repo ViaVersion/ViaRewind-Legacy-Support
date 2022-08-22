@@ -1,12 +1,15 @@
 package de.gerrygames.viarewind.legacysupport.reflection;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class MethodSignature {
 
     private final String name;
     private final Class<?>[] parameterTypes;
+
+    private Class<?> returnType;
 
     public MethodSignature(String name, Class<?>... parameterTypes) {
         this.name = name;
@@ -19,6 +22,16 @@ public class MethodSignature {
 
     public Class<?>[] parameterTypes() {
         return parameterTypes;
+    }
+
+    public Class<?> returnType() {
+        return returnType;
+    }
+
+    public MethodSignature withReturnType(Class<?> returnType) {
+        Objects.requireNonNull(returnType);
+        this.returnType = returnType;
+        return this;
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class ReflectionAPI {
 	private static Map<String, Field> fields = new HashMap<>();
@@ -41,6 +42,9 @@ public class ReflectionAPI {
             for (MethodSignature signature : signatures) {
                 try {
                     Method method = depth.getDeclaredMethod(signature.name(), signature.parameterTypes());
+					if (signature.returnType() != null && !Objects.equals(method.getReturnType(), signature.returnType())) {
+						continue;
+					}
                     if (!method.isAccessible()) {
                         method.setAccessible(true);
                     }
