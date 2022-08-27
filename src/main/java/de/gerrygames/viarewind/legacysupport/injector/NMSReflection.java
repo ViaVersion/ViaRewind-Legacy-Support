@@ -27,6 +27,18 @@ public class NMSReflection {
                 protocolVersion;
     }
 
+    public static Class<?> getBlockDataClass() {
+        try {
+            if (getProtocolVersion() >= PROTOCOL_1_17) {
+                return Class.forName("net.minecraft.world.level.block.state.IBlockData");
+            }
+            return getLegacyNMSClass("IBlockData");
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     public static Class<?> getBlockPositionClass() {
         try {
             if (getProtocolVersion() >= PROTOCOL_1_17) {

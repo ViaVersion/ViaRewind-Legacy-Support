@@ -31,6 +31,8 @@ public class SoundListener implements Listener {
 		} catch (ClassNotFoundException ignored) {}
 	}
 
+	private static final Class<?> I_BLOCK_DATA = NMSReflection.getBlockDataClass();
+
 	public SoundListener() {
 		try {
 			Class.forName("org.bukkit.event.entity.EntityPickupItemEvent");
@@ -102,8 +104,8 @@ public class SoundListener implements Listener {
 			}
 			Method getTypeMethod = ReflectionAPI.pickMethod(
 					nmsWorld.getClass(),
-					new MethodSignature("getType", blockPositionClass),
-					new MethodSignature("a_", blockPositionClass) // 1.18.2
+					new MethodSignature("getType", blockPositionClass).withReturnType(I_BLOCK_DATA),
+					new MethodSignature("a_", blockPositionClass).withReturnType(I_BLOCK_DATA) // 1.18.2
 			);
 			Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
 			Method getBlock = ReflectionAPI.pickMethod(
