@@ -1,6 +1,7 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.injector.NMSReflection;
 import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
@@ -21,6 +22,7 @@ import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SoundListener implements Listener {
 	private static boolean isSoundCategory = false;
@@ -152,23 +154,37 @@ public class SoundListener implements Listener {
 			volume = (volume + 1.0f) / 2.0f;
 			pitch *= 0.8;
 
-			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch);
+			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5,
+					volume, pitch, ThreadLocalRandom.current().nextLong());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 
-	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch) {
+	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch, long seed) {
 		try {
-			Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
-					soundEffect.getClass(), soundCategory.getClass(),
-					double.class, double.class, double.class,
-					float.class, float.class
-			).newInstance(
-					soundEffect, soundCategory,
-					x, y, z,
-					volume, pitch
-			);
+			Object packet;
+			if (Via.getAPI().getServerVersion().lowestSupportedVersion() <= ProtocolVersion.v1_18_2.getVersion()) {
+				packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
+						soundEffect.getClass(), soundCategory.getClass(),
+						double.class, double.class, double.class,
+						float.class, float.class
+				).newInstance(
+						soundEffect, soundCategory,
+						x, y, z,
+						volume, pitch
+				);
+			} else {
+				packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
+						soundEffect.getClass(), soundCategory.getClass(),
+						double.class, double.class, double.class,
+						float.class, float.class, long.class
+				).newInstance(
+						soundEffect, soundCategory,
+						x, y, z,
+						volume, pitch, seed
+				);
+			}
 
 			NMSReflection.sendPacket(player, packet);
 		} catch (Exception ex) {
