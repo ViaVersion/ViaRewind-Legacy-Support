@@ -36,6 +36,8 @@ public class BukkitPlugin extends JavaPlugin {
 					Bukkit.getPluginManager().registerEvents(new BrewingListener(), BukkitPlugin.this);
 				if (serverProtocol > 84 && config.getBoolean("lily-pad-fix"))
 					BoundingBoxFixer.fixLilyPad();
+				if (serverProtocol > 404 && config.getBoolean("carpet-fix")) // 1.14+ only
+					BoundingBoxFixer.fixCarpet();
 				if (serverProtocol > 48 && config.getBoolean("ladder-fix"))
 					BoundingBoxFixer.fixLadder();
 				if (serverProtocol > 47 && config.getBoolean("sound-fix"))

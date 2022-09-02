@@ -26,6 +26,22 @@ public class BoundingBoxFixer {
 		}
 	}
 
+	public static void fixCarpet() {
+		try {
+			int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
+			Class<?> blockCarpetClass;
+			if (serverProtocol <= 754) { // 1.16.5
+				blockCarpetClass = NMSReflection.getNMSBlock("BlockCarpet");
+			} else {
+				blockCarpetClass = NMSReflection.getNMSBlock("CarpetBlock");
+			}
+			Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockCarpetClass, "a");
+			setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
+		} catch (Exception ex) {
+			BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
+		}
+	}
+
 	public static void fixLadder() {
 		try {
 			Class<?> blockLadderClass = NMSReflection.getNMSBlock("BlockLadder");
