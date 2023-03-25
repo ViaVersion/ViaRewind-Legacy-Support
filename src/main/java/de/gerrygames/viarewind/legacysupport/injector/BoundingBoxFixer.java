@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BoundingBoxFixer {
@@ -17,6 +18,7 @@ public class BoundingBoxFixer {
 	public static void fixLilyPad() {
 		try {
 			Class<?> blockWaterLilyClass = NMSReflection.getNMSBlock("BlockWaterLily");
+
 			Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockWaterLilyClass, "a");
 			Object boundingBox = boundingBoxField.get(null);
 
@@ -34,6 +36,7 @@ public class BoundingBoxFixer {
 
 			int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
 			if (serverProtocol <= 340) {
+				System.out.println(Arrays.stream(blockLadderClass.getFields()).map(c -> c+"").collect(Collectors.joining(", ")));
 				boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, "b");
 				boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, "c");
 				boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, "d");

@@ -20,6 +20,8 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SoundListener implements Listener {
 	private static boolean isSoundCategory = false;
@@ -39,7 +41,6 @@ public class SoundListener implements Listener {
 	private Method getCraftBlockToNMSBlockStateMethod, blockStateToBlockMethod;
 
 	private Method getStepSoundMethod;
-
 	private Method bukkitSoundGroupMethod;
 	private Method bukkitSoundMethod;
 
@@ -57,20 +58,26 @@ public class SoundListener implements Listener {
 			getCraftBlockToNMSBlockStateMethod.setAccessible(true);
 		}
 		Class<?> blockDataClass = getCraftBlockToNMSBlockStateMethod.getReturnType();
-		blockStateToBlockMethod = blockDataClass.getMethod("getBlock");
-
-		Class<?> nmsBlockClass = blockStateToBlockMethod.getReturnType();
-
 		try {
-			getStepSoundMethod = nmsBlockClass.getMethod("getStepSound", blockDataClass);
-		} catch (NoSuchMethodException ex) {
+			blockStateToBlockMethod = blockDataClass.getMethod("b");
+		}catch (NoSuchMethodException eee) {
+			blockStateToBlockMethod = blockDataClass.getMethod("getBlock");
+		}
+		Class<?> nmsBlockClass = blockStateToBlockMethod.getReturnType();
+		try {
+			getStepSoundMethod = nmsBlockClass.getMethod("m", blockDataClass); // getSoundType()
+		}catch(NoSuchMethodException eee) {
 			try {
 				getStepSoundMethod = nmsBlockClass.getMethod("getStepSound");
 			} catch (NoSuchMethodException ex2) {
-				getStepSoundMethod = nmsBlockClass.getMethod("w");
+				try {
+					getStepSoundMethod = nmsBlockClass.getMethod("getStepSound", blockDataClass);
+				}catch (NoSuchMethodException exx) {
+					getStepSoundMethod = nmsBlockClass.getMethod("w");
+
+				}
 			}
 		}
-
 		Class<?> soundEffectTypeClass = getStepSoundMethod.getReturnType();
 		try {
 			Class<?> soundGroupClass = NMSReflection.obc("CraftSoundGroup");
