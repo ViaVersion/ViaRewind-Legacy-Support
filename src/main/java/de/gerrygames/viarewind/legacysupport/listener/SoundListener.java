@@ -1,8 +1,11 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.injector.NMSReflection;
+import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
+import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -22,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SoundListener implements Listener {
 	private static boolean isSoundCategory = false;
@@ -181,7 +185,6 @@ public class SoundListener implements Listener {
 		try {
 			Object blockData = getCraftBlockToNMSBlockStateMethod.invoke(block);
 			Object nmsBlock = blockStateToBlockMethod.invoke(blockData);
-
 			Object soundType;
 			if (getStepSoundMethod.getParameterCount() == 0) {
 				soundType = getStepSoundMethod.invoke(nmsBlock);
@@ -210,7 +213,6 @@ public class SoundListener implements Listener {
 
 			volume = (volume + 1.0f) / 2.0f;
 			pitch *= 0.8;
-
 			Location location = block.getLocation().add(0.5, 0.5, 0.5);
 			if (sound != null) {
 				playSound(player, location, sound, SOUND_CATEGORY_BLOCKS, volume, pitch);

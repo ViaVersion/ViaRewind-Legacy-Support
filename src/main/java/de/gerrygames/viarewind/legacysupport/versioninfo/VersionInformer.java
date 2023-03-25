@@ -9,13 +9,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class VersionInformer implements Listener {
-	private String message;
+	private String[] versionMessage;
 	private int maxVersion;
 
 	public VersionInformer() {
-		message = BukkitPlugin.getInstance().getConfig().getString("versioninfo.message");
+		String message = BukkitPlugin.getInstance().getConfig().getString("versioninfo.message");
 		message = ChatColor.translateAlternateColorCodes('&', message);
 		message = message.replace("%version%", Bukkit.getVersion().split(" ")[2].replace(")", ""));
+		this.versionMessage = message.split(System.lineSeparator());
 
 		maxVersion = BukkitPlugin.getInstance().getConfig().getInt("versioninfo.max-version");
 		String interval = BukkitPlugin.getInstance().getConfig().getString("versioninfo.interval");
@@ -27,7 +28,7 @@ public class VersionInformer implements Listener {
 				Bukkit.getOnlinePlayers().forEach(player -> {
 					int version = Via.getAPI().getPlayerVersion(player);
 					if (version>maxVersion) return;
-					player.sendMessage(message);
+					player.sendMessage(this.versionMessage);
 				});
 			}, ticks, ticks);
 		}
@@ -37,6 +38,6 @@ public class VersionInformer implements Listener {
 	public void onJoin(PlayerJoinEvent e) {
 		int version = Via.getAPI().getPlayerVersion(e.getPlayer());
 		if (version>maxVersion) return;
-		e.getPlayer().sendMessage(message);
+		e.getPlayer().sendMessage(this.versionMessage);
 	}
 }

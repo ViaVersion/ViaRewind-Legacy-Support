@@ -1,5 +1,8 @@
 package de.gerrygames.viarewind.legacysupport.injector;
 
+import com.viaversion.viaversion.api.Via;
+import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
+import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -25,7 +28,6 @@ public class NMSReflection {
         Class<?> nmsPlayerClass = nms("EntityPlayer", "net.minecraft.server.level.EntityPlayer");
         Class<?> playerConnectionClass = nms("PlayerConnection", "net.minecraft.server.network.PlayerConnection");
         Class<?> packetClass = nms("Packet", "net.minecraft.network.protocol.Packet");
-
         getHandleMethod = craftPlayerClass.getMethod("getHandle");
         playerConnectionField = Arrays.stream(nmsPlayerClass.getFields())
                 .filter(field -> field.getType() == playerConnectionClass).findFirst()
@@ -90,7 +92,7 @@ public class NMSReflection {
             return Class.forName(fallbackFullClassName);
         }
     }
-
+    
     public static Class<?> obc(String className) throws ClassNotFoundException {
         return Class.forName(BASE + "." + className);
     }
