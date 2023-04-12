@@ -1,11 +1,8 @@
 package de.gerrygames.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
-import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
 import de.gerrygames.viarewind.legacysupport.injector.NMSReflection;
-import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
-import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -25,170 +22,151 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class SoundListener implements Listener {
-	private static boolean isSoundCategory = false;
-	static {
-		try {
-			Class.forName("org.bukkit.SoundCategory");
-			isSoundCategory = true;
-		} catch (ClassNotFoundException ignored) {}
-	}
 
-	private static final Class<?> I_BLOCK_DATA = NMSReflection.getBlockDataClass();
+  private static boolean isSoundCategory = false;
 
-	public SoundListener() {
-		try {
-			Class.forName("org.bukkit.event.entity.EntityPickupItemEvent");
+  static {
+    try {
+      Class.forName("org.bukkit.SoundCategory");
+      isSoundCategory = true;
+    } catch (ClassNotFoundException ignored) {
+    }
+  }
 
-			Bukkit.getPluginManager().registerEvents(new Listener() {
+  public SoundListener() {
+    try {
+      Class.forName("org.bukkit.event.entity.EntityPickupItemEvent");
 
-				@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-				public void onItemPickUp(EntityPickupItemEvent e) {
-					if (!(e.getEntity() instanceof Player)) return;
-					SoundListener.this.onItemPickUp((Player) e.getEntity());
-				}
+      Bukkit.getPluginManager().registerEvents(new Listener() {
 
-			}, BukkitPlugin.getInstance());
-		} catch (Exception ex) {
-			Bukkit.getPluginManager().registerEvents(new Listener() {
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onItemPickUp(EntityPickupItemEvent e) {
+          if (!(e.getEntity() instanceof Player))
+            return;
+          SoundListener.this.onItemPickUp((Player) e.getEntity());
+        }
 
-				@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-				public void onItemPickUp(PlayerPickupItemEvent e) {
-					SoundListener.this.onItemPickUp(e.getPlayer());
-				}
+      }, BukkitPlugin.getInstance());
+    } catch (Exception ex) {
+      Bukkit.getPluginManager().registerEvents(new Listener() {
 
-			}, BukkitPlugin.getInstance());
-		}
-	}
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        public void onItemPickUp(PlayerPickupItemEvent e) {
+          SoundListener.this.onItemPickUp(e.getPlayer());
+        }
 
-	@EventHandler
-	public void onBlockPlace(BlockPlaceEvent e) {
-		Player player = e.getPlayer();
-		if (Via.getAPI().getPlayerVersion(player)>47) return;
-		playBlockPlaceSound(player, e.getBlock());
-	}
+      }, BukkitPlugin.getInstance());
+    }
+  }
 
-	private void onItemPickUp(Player player) {
-		float volume = 0.2f;
-		float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
-		Location loc = player.getLocation();
-		playSound(loc, Sound.ENTITY_ITEM_PICKUP, "PLAYERS", volume, pitch, 16, 47);
-	}
+  @EventHandler
+  public void onBlockPlace(BlockPlaceEvent e) {
+    Player player = e.getPlayer();
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-	private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
-		float volume = 0.1f;
-		float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
-		playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, "PLAYERS", volume, pitch, 16, 47);
-	}
+    if (Via.getAPI().getPlayerVersion(player) > 47)
+      return;
 
-	private static void playSound(Location loc, Sound sound, String category, float volume, float pitch, double dist, int version) {
-		Bukkit.getOnlinePlayers().stream()
-				.filter(p -> p.getWorld()==loc.getWorld())
-				.filter(p -> p.getLocation().distanceSquared(loc) < dist * dist)
-				.filter(p -> Via.getAPI().getPlayerVersion(p) <= version)
-				.forEach(p -> {
-					if (isSoundCategory) {
-						p.playSound(loc, sound, SoundCategory.valueOf(category), volume, pitch);
-					} else {
-						p.playSound(loc, sound, volume, pitch);
-					}
-				});
-	}
+    if(Via.getAPI().getServerVersion().lowestSupportedVersion() >= 755) {
+      player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
+    } else {
+      playBlockPlaceSoundNMS(player, e.getBlock());
+    }
+  }
 
-	private static void playBlockPlaceSound(Player player, Block block) {
-		try {
-			World world = block.getWorld();
-			Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
-			Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
-			Object blockPosition = null;
-			if (blockPositionClass != null) {
-				blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
-			}
-			Method getTypeMethod = ReflectionAPI.pickMethod(
-					nmsWorld.getClass(),
-					new MethodSignature("getType", blockPositionClass).withReturnType(I_BLOCK_DATA),
-					new MethodSignature("a_", blockPositionClass).withReturnType(I_BLOCK_DATA) // 1.18.2
-			);
-			Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
-			Method getBlock = ReflectionAPI.pickMethod(
-					blockData.getClass(),
-					new MethodSignature("getBlock"),
-					new MethodSignature("b") // 1.18.2
-			);
-			getBlock.setAccessible(true);
-			Object nmsBlock = getBlock.invoke(blockData);
-			Method getStepSound = ReflectionAPI.pickMethod(
-					nmsBlock.getClass(),
-                    new MethodSignature("m", blockData.getClass()), // 1.18.2
-                    new MethodSignature("w"), // 1.18?
-					new MethodSignature("getStepSound", blockData.getClass()), // 1.17
-					new MethodSignature("getStepSound") // pre 1.17
-			);
+  private void onItemPickUp(Player player) {
+    float volume = 0.2f;
+    float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
+    Location loc = player.getLocation();
+    playSound(loc, Sound.ENTITY_ITEM_PICKUP, "PLAYERS", volume, pitch, 16, 47);
+  }
 
-			Object soundType;
-			if (getStepSound.getParameterCount() == 0) {
-				soundType = getStepSound.invoke(nmsBlock);
-			} else {
-				soundType = getStepSound.invoke(nmsBlock, blockData);
-			}
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
+    float volume = 0.1f;
+    float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
+    playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, "PLAYERS", volume, pitch, 16, 47);
+  }
 
-			Method soundEffectMethod;
-			Method volumeMethod;
-			Method pitchMethod;
+  private static void playSound(Location loc, Sound sound, String category, float volume, float pitch, double dist, int version) {
+    Bukkit.getOnlinePlayers().stream()
+        .filter(p -> p.getWorld() == loc.getWorld())
+        .filter(p -> p.getLocation().distanceSquared(loc) < dist * dist)
+        .filter(p -> Via.getAPI().getPlayerVersion(p) <= version)
+        .forEach(p -> {
+          if (isSoundCategory) {
+            p.playSound(loc, sound, SoundCategory.valueOf(category), volume, pitch);
+          } else {
+            p.playSound(loc, sound, volume, pitch);
+          }
+        });
+  }
 
-			try {
-				soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
-				volumeMethod = soundType.getClass().getMethod("getVolume");
-				pitchMethod = soundType.getClass().getMethod("getPitch");
-			} catch (NoSuchMethodException ex) {
-				soundEffectMethod = soundType.getClass().getMethod("e");
-				volumeMethod = soundType.getClass().getMethod("a");
-				pitchMethod = soundType.getClass().getMethod("b");
-			}
 
-			Object soundEffect = soundEffectMethod.invoke(soundType);
-			float volume = (float) volumeMethod.invoke(soundType);
-			float pitch = (float) pitchMethod.invoke(soundType);
-			Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
+  private static void playBlockPlaceSoundNMS(Player player, Block block) {
+    try {
+      World world = block.getWorld();
+      Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
+      Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
+      Object blockPosition = null;
 
-			volume = (volume + 1.0f) / 2.0f;
-			pitch *= 0.8;
+      if (blockPositionClass != null)
+        blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
 
-			playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5,
-					volume, pitch, ThreadLocalRandom.current().nextLong());
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+      Method getTypeMethod = nmsWorld.getClass().getMethod("getType", blockPositionClass);
+      getTypeMethod.setAccessible(true);
 
-	private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch, long seed) {
-		try {
-			Object packet;
-			if (Via.getAPI().getServerVersion().lowestSupportedVersion() <= ProtocolVersion.v1_18_2.getVersion()) {
-				packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
-						soundEffect.getClass(), soundCategory.getClass(),
-						double.class, double.class, double.class,
-						float.class, float.class
-				).newInstance(
-						soundEffect, soundCategory,
-						x, y, z,
-						volume, pitch
-				);
-			} else {
-				packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
-						soundEffect.getClass(), soundCategory.getClass(),
-						double.class, double.class, double.class,
-						float.class, float.class, long.class
-				).newInstance(
-						soundEffect, soundCategory,
-						x, y, z,
-						volume, pitch, seed
-				);
-			}
+      Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
+      Method getBlock = blockData.getClass().getMethod("getBlock");
+      getBlock.setAccessible(true);
 
-			NMSReflection.sendPacket(player, packet);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+      Object nmsBlock = getBlock.invoke(blockData);
+      Method getStepSound = nmsBlock.getClass().getMethod("getStepSound");
+      getStepSound.setAccessible(true);
+
+      Object soundType;
+      if (getStepSound.getParameterCount() == 0) {
+        soundType = getStepSound.invoke(nmsBlock);
+      } else {
+        soundType = getStepSound.invoke(nmsBlock, blockData);
+      }
+
+      Method soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
+      Method volumeMethod = soundType.getClass().getMethod("getVolume");
+      Method pitchMethod = soundType.getClass().getMethod("getPitch");
+
+      Object soundEffect = soundEffectMethod.invoke(soundType);
+      float volume = (float) volumeMethod.invoke(soundType);
+      float pitch = (float) pitchMethod.invoke(soundType);
+      Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
+
+      volume = (volume + 1.0f) / 2.0f;
+      pitch *= 0.8;
+
+      playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5,
+          volume, pitch, ThreadLocalRandom.current().nextLong());
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  // 1.8.8 -> 1.16.5
+  private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch, long seed) {
+    try {
+      Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
+          soundEffect.getClass(), soundCategory.getClass(),
+          double.class, double.class, double.class,
+          float.class, float.class, long.class
+      ).newInstance(
+          soundEffect, soundCategory,
+          x, y, z,
+          volume, pitch, seed
+      );
+
+      // Volume = 1
+      // Pitch = .8
+      NMSReflection.sendPacket(player, packet);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
 }
