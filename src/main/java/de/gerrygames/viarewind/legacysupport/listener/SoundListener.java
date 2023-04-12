@@ -103,6 +103,7 @@ public class SoundListener implements Listener {
   }
 
 
+  // 1.8.8 -> 1.16.5
   private static void playBlockPlaceSoundNMS(Player player, Block block) {
     try {
       World world = block.getWorld();
@@ -123,21 +124,34 @@ public class SoundListener implements Listener {
       Object nmsBlock = getBlock.invoke(blockData);
       Method getStepSound = ReflectionAPI.pickMethod(
           nmsBlock.getClass(),
-          new MethodSignature("getStepSound", blockData.getClass()), // 1.16.5
-          new MethodSignature("getStepSound")
+          new MethodSignature("w"), // 1.9 -> 1.10
+          new MethodSignature("getStepSound", blockData.getClass()), // 1.14 -> 1.16
+          new MethodSignature("getStepSound") // 1.11 -> 1.12
       );
       getStepSound.setAccessible(true);
 
       Object soundType;
       if (getStepSound.getParameterCount() == 0) {
-        soundType = getStepSound.invoke(nmsBlock);
+        soundType = getStepSound.invoke(nmsBlock); // 1.9 -> 1.13
       } else {
-        soundType = getStepSound.invoke(nmsBlock, blockData);
+        soundType = getStepSound.invoke(nmsBlock, blockData); // 1.14 -> 1.16.5
       }
 
-      Method soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
-      Method volumeMethod = soundType.getClass().getMethod("getVolume");
-      Method pitchMethod = soundType.getClass().getMethod("getPitch");
+      Method soundEffectMethod;
+      Method volumeMethod;
+      Method pitchMethod;
+
+      try {
+        // 1.16.5
+        soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
+        volumeMethod = soundType.getClass().getMethod("getVolume");
+        pitchMethod = soundType.getClass().getMethod("getPitch");
+      } catch (NoSuchMethodException ex) {
+        // 1.9 -> 1.16.4
+        soundEffectMethod = soundType.getClass().getMethod("e");
+        volumeMethod = soundType.getClass().getMethod("a");
+        pitchMethod = soundType.getClass().getMethod("b");
+      }
 
       Object soundEffect = soundEffectMethod.invoke(soundType);
       float volume = (float) volumeMethod.invoke(soundType);
