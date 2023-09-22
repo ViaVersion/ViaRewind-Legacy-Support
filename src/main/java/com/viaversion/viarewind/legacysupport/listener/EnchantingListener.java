@@ -19,6 +19,7 @@
 package com.viaversion.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -32,22 +33,38 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class EnchantingListener implements Listener {
 
-    private final boolean newMaterialNames = Material.getMaterial("LAPIS_LAZULI") != null;
-    private final Material lapisMaterial = newMaterialNames ? Material.LAPIS_LAZULI : Material.getMaterial("INK_SACK");
+    private final boolean newMaterialNames;
+    private final Material lapisMaterial;
+
+    public EnchantingListener() {
+        newMaterialNames = Material.getMaterial("LAPIS_LAZULI") != null;
+
+        if (newMaterialNames) {
+            lapisMaterial = Material.LAPIS_LAZULI;
+        } else {
+            lapisMaterial = Material.getMaterial("INK_SACK");
+        }
+    }
 
     @EventHandler
     public void onInventoryOpen(InventoryOpenEvent e) {
         if (!(e.getInventory() instanceof EnchantingInventory)) return;
-        Player player = (Player) e.getPlayer();
-        if (Via.getAPI().getPlayerVersion(player) > 5) return;
-        PlayerInventory playerInventory = player.getInventory();
-        ItemStack lapis = newMaterialNames ? new ItemStack(lapisMaterial) : new ItemStack(lapisMaterial, 1, (short) 4);
+
+        final Player player = (Player) e.getPlayer();
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_8.getVersion()) return;
+
+        final PlayerInventory inv = player.getInventory();
+        final ItemStack lapis = newMaterialNames ? new ItemStack(lapisMaterial) : new ItemStack(lapisMaterial, 1, (short) 4);
+
         int amount = 0;
-        for (int i = 0; i < playerInventory.getSize(); i++) {
-            ItemStack item = playerInventory.getItem(i);
+        for (int i = 0; i < inv.getSize(); i++) {
+            ItemStack item = inv.getItem(i);
+
             if (item == null || !item.isSimilar(lapis)) continue;
+
             if (amount + item.getAmount() > 64) {
                 item.setAmount(amount + item.getAmount() - 64);
                 amount = 64;
@@ -55,29 +72,37 @@ public class EnchantingListener implements Listener {
                 amount += item.getAmount();
                 item = new ItemStack(Material.AIR);
             }
-            playerInventory.setItem(i, item);
+
+            inv.setItem(i, item);
             if (amount == 64) break;
         }
+
         if (amount == 0) return;
-        EnchantingInventory inventory = (EnchantingInventory) e.getInventory();
+
+        final EnchantingInventory replacement = (EnchantingInventory) e.getInventory();
         lapis.setAmount(amount);
-        inventory.setSecondary(lapis);
+        replacement.setSecondary(lapis);
     }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent e) {
         if (!(e.getInventory() instanceof EnchantingInventory)) return;
-        Player player = (Player) e.getPlayer();
-        int version = Via.getAPI().getPlayerVersion(player);
-        if (version > 5) return;
-        PlayerInventory playerInventory = player.getInventory();
-        EnchantingInventory inventory = (EnchantingInventory) e.getInventory();
-        ItemStack item = inventory.getSecondary();
+
+        final Player player = (Player) e.getPlayer();
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_8.getVersion()) return;
+
+        final PlayerInventory inv = player.getInventory();
+        final EnchantingInventory replacement = (EnchantingInventory) e.getInventory();
+
+        final ItemStack item = replacement.getSecondary();
         if (item == null || item.getType() == Material.AIR) return;
-        inventory.setSecondary(new ItemStack(Material.AIR));
-        Map<Integer, ItemStack> remaining = playerInventory.addItem(item);
+
+        replacement.setSecondary(new ItemStack(Material.AIR));
+
+        Map<Integer, ItemStack> remaining = inv.addItem(item);
         if (!remaining.isEmpty()) {
-            Location location = player.getLocation();
+            final Location location = player.getLocation();
+
             for (ItemStack value : remaining.values()) {
                 player.getWorld().dropItem(location, value);
             }

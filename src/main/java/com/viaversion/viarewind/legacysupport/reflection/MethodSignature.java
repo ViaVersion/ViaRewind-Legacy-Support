@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 public class MethodSignature {
-
     private final String name;
     private final Class<?>[] parameterTypes;
 

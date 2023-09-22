@@ -27,31 +27,32 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BoundingBoxFixer {
 
-    public static void fixLilyPad() {
+    public static void fixLilyPad(final Logger logger) {
         try {
             final Field boundingBoxField = ReflectionAPI.getFieldAccessible(NMSReflection.getNMSBlock("BlockWaterLily"), "a");
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
         } catch (Exception ex) {
-            BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not fix lily pad bounding box.", ex);
+            logger.log(Level.SEVERE, "Could not fix lily pad bounding box.", ex);
         }
     }
 
-    public static void fixCarpet(final int serverVersion) {
+    public static void fixCarpet(final Logger logger, final int serverVersion) {
         try {
             final Class<?> blockCarpetClass = serverVersion <= ProtocolVersion.v1_16_4.getVersion() ? NMSReflection.getNMSBlock("BlockCarpet") : NMSReflection.getNMSBlock("CarpetBlock");
 
             final Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockCarpetClass, "a");
             setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
         } catch (Exception ex) {
-            BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
+            logger.log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
         }
     }
 
-    public static void fixLadder(final int serverVersion) {
+    public static void fixLadder(final Logger logger, final int serverVersion) {
         try {
             final boolean pre1_12_2 = serverVersion <= ProtocolVersion.v1_12_2.getVersion();
             final boolean pre1_13_2 = serverVersion <= ProtocolVersion.v1_13_2.getVersion();
@@ -69,7 +70,7 @@ public class BoundingBoxFixer {
             setBoundingBox(boundingBoxSouthField.get(null), 0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
             setBoundingBox(boundingBoxNorthField.get(null), 0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
         } catch (Exception ex) {
-            BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Could not fix ladder bounding box.", ex);
+            logger.log(Level.SEVERE, "Could not fix ladder bounding box.", ex);
         }
     }
 

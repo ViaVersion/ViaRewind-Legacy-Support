@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 public class AreaEffectCloudListener implements Listener {
     private final ArrayList<AreaEffectCloud> effectClouds = new ArrayList<>();
 
-    public AreaEffectCloudListener() {
-        Bukkit.getScheduler().runTaskTimer(BukkitPlugin.getInstance(), () -> {
+    public AreaEffectCloudListener(final BukkitPlugin plugin) {
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             final Set<Player> affectedPlayers = Bukkit.getOnlinePlayers().stream().filter(p -> Via.getAPI().getPlayerVersion(p) <= ProtocolVersion.v1_8.getVersion()).collect(Collectors.toSet());
             effectClouds.removeIf(e -> !e.isValid());
             effectClouds.forEach(cloud -> {

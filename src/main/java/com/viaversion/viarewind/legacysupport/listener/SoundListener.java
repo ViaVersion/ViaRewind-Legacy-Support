@@ -23,6 +23,7 @@ import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viarewind.legacysupport.injector.NMSReflection;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -40,6 +41,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import java.lang.reflect.Method;
 
+@SuppressWarnings("unchecked")
 public class SoundListener implements Listener {
 
     private static boolean isSoundCategory = false;
@@ -52,7 +54,7 @@ public class SoundListener implements Listener {
         }
     }
 
-    public SoundListener() {
+    public SoundListener(final BukkitPlugin plugin) {
         try {
             Class.forName("org.bukkit.event.entity.EntityPickupItemEvent");
 
@@ -60,12 +62,12 @@ public class SoundListener implements Listener {
 
                 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
                 public void onItemPickUp(EntityPickupItemEvent e) {
-                    if (!(e.getEntity() instanceof Player))
-                        return;
+                    if (!(e.getEntity() instanceof Player)) return;
+
                     SoundListener.this.onItemPickUp((Player) e.getEntity());
                 }
 
-            }, BukkitPlugin.getInstance());
+            }, plugin);
         } catch (Exception ex) {
             Bukkit.getPluginManager().registerEvents(new Listener() {
 
@@ -74,18 +76,16 @@ public class SoundListener implements Listener {
                     SoundListener.this.onItemPickUp(e.getPlayer());
                 }
 
-            }, BukkitPlugin.getInstance());
+            }, plugin);
         }
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        Player player = e.getPlayer();
+        final Player player = e.getPlayer();
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_9.getVersion()) return;
 
-        if (Via.getAPI().getPlayerVersion(player) > 47)
-            return;
-
-        if (Via.getAPI().getServerVersion().lowestSupportedVersion() >= 755) {
+        if (Via.getAPI().getServerVersion().lowestSupportedVersion() >= ProtocolVersion.v1_17.getVersion()) {
             player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
         } else {
             playBlockPlaceSoundNMS(player, e.getBlock());
@@ -93,27 +93,28 @@ public class SoundListener implements Listener {
     }
 
     private void onItemPickUp(Player player) {
-        float volume = 0.2f;
-        float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
-        Location loc = player.getLocation();
-        playSound(loc, Sound.ENTITY_ITEM_PICKUP, "PLAYERS", volume, pitch, 16, 47);
+        final float volume = 0.2f;
+        final float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
+
+        playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, volume, pitch);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
-        float volume = 0.1f;
-        float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
-        playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, "PLAYERS", volume, pitch, 16, 47);
+        final float volume = 0.1f;
+        final float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
+
+        playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, volume, pitch);
     }
 
-    private static void playSound(Location loc, Sound sound, String category, float volume, float pitch, double dist, int version) {
+    private static void playSound(final Location loc, final Sound sound, final float volume, final float pitch) {
         Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.getWorld() == loc.getWorld())
-                .filter(p -> p.getLocation().distanceSquared(loc) < dist * dist)
-                .filter(p -> Via.getAPI().getPlayerVersion(p) <= version)
+                .filter(p -> p.getLocation().distanceSquared(loc) < (double) 16 * (double) 16)
+                .filter(p -> Via.getAPI().getPlayerVersion(p) <= 47)
                 .forEach(p -> {
                     if (isSoundCategory) {
-                        p.playSound(loc, sound, SoundCategory.valueOf(category), volume, pitch);
+                        p.playSound(loc, sound, SoundCategory.valueOf("PLAYERS"), volume, pitch);
                     } else {
                         p.playSound(loc, sound, volume, pitch);
                     }

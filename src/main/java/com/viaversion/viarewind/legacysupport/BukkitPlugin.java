@@ -34,26 +34,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BukkitPlugin extends JavaPlugin {
-    private static BukkitPlugin instance;
-
-    @Override
-    public void onLoad() {
-        instance = this;
-    }
-
-    protected void makeConfig() {
-        saveDefaultConfig();
-        getConfig().options().copyDefaults(true);
-        saveConfig();
-    }
 
     @Override
     public void onEnable() {
-        makeConfig();
+        // Make the config file
+        saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        saveConfig();
 
+        // Load VR LS
         final FileConfiguration config = getConfig();
 
         new BukkitRunnable() {
+
             @Override
             public void run() {
                 int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
@@ -67,15 +60,15 @@ public class BukkitPlugin extends JavaPlugin {
                     Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
                 }
                 if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("sound-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new SoundListener(), BukkitPlugin.this);
+                    Bukkit.getPluginManager().registerEvents(new SoundListener(BukkitPlugin.this), BukkitPlugin.this);
                 }
                 // Added in 15w31a (1.9)
                 if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("ladder-fix")) {
-                    BoundingBoxFixer.fixLadder(serverProtocol);
+                    BoundingBoxFixer.fixLadder(getLogger(), serverProtocol);
                 }
                 // Added in 15w32c (1.9)
                 if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("area-effect-cloud-particles")) {
-                    Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(), BukkitPlugin.this);
+                    Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(BukkitPlugin.this), BukkitPlugin.this);
                 }
                 // Added in 15w40b (1.9)
                 if (serverProtocol > ProtocolVersion.v1_9.getVersion() && config.getBoolean("elytra-fix")) {
@@ -87,20 +80,16 @@ public class BukkitPlugin extends JavaPlugin {
                 }
                 // Added in 15w44b (1.9)
                 if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("lily-pad-fix")) {
-                    BoundingBoxFixer.fixLilyPad();
+                    BoundingBoxFixer.fixLilyPad(getLogger());
                 }
                 if (serverProtocol >= ProtocolVersion.v1_14_4.getVersion() && config.getBoolean("carpet-fix")) {
-                    BoundingBoxFixer.fixCarpet(serverProtocol);
+                    BoundingBoxFixer.fixCarpet(getLogger(), serverProtocol);
                 }
 
                 if (config.getBoolean("versioninfo.active")) {
-                    new VersionInformer();
+                    new VersionInformer(BukkitPlugin.this, config);
                 }
             }
         }.runTaskTimer(this, 1L, 1L);
-    }
-
-    public static BukkitPlugin getInstance() {
-        return instance;
     }
 }

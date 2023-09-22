@@ -22,40 +22,49 @@ import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+@SuppressWarnings({"DataFlowIssue", "unchecked"})
 public class VersionInformer implements Listener {
     private final String[] versionMessage;
     private final int maxVersion;
 
-    public VersionInformer() {
-        String message = BukkitPlugin.getInstance().getConfig().getString("versioninfo.message");
-        message = ChatColor.translateAlternateColorCodes('&', message);
-        message = message.replace("%version%", Bukkit.getVersion().split(" ")[2].replace(")", ""));
-        this.versionMessage = message.split(System.lineSeparator());
+    public VersionInformer(final BukkitPlugin plugin, final FileConfiguration config) {
+        final String message = ChatColor.translateAlternateColorCodes('&', config.getString("versioninfo.message")).
+                replace("%version%", Bukkit.getVersion().split(" ")[2].replace(")", ""));
 
-        maxVersion = BukkitPlugin.getInstance().getConfig().getInt("versioninfo.max-version");
-        String interval = BukkitPlugin.getInstance().getConfig().getString("versioninfo.interval");
+        this.versionMessage = message.split(System.lineSeparator());
+        maxVersion = config.getInt("versioninfo.max-version");
+
+        String interval = config.getString("versioninfo.interval");
         if (interval.equalsIgnoreCase("JOIN")) {
-            Bukkit.getPluginManager().registerEvents(this, BukkitPlugin.getInstance());
+            Bukkit.getPluginManager().registerEvents(this, plugin);
         } else {
-            long ticks = Long.parseLong(interval);
-            Bukkit.getScheduler().runTaskTimer(BukkitPlugin.getInstance(), () -> {
-                Bukkit.getOnlinePlayers().forEach(player -> {
-                    int version = Via.getAPI().getPlayerVersion(player);
-                    if (version > maxVersion) return;
-                    player.sendMessage(this.versionMessage);
-                });
-            }, ticks, ticks);
+            long ticks;
+            try {
+                ticks = Long.parseLong(interval);
+            } catch (NumberFormatException e) {
+                Bukkit.getLogger().warning("Invalid interval for versioninfo.interval, defaulting to 6000");
+                ticks = 6000;
+            }
+
+            Bukkit.getScheduler().runTaskTimer(plugin, () -> Bukkit.getOnlinePlayers().forEach(this::inform), ticks, ticks);
         }
+    }
+
+    protected void inform(final Player player) {
+        int version = Via.getAPI().getPlayerVersion(player);
+        if (version > maxVersion) return;
+
+        player.sendMessage(this.versionMessage);
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        int version = Via.getAPI().getPlayerVersion(e.getPlayer());
-        if (version > maxVersion) return;
-        e.getPlayer().sendMessage(this.versionMessage);
+        inform(e.getPlayer());
     }
 }
