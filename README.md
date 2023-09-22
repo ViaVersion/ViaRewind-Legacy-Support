@@ -1,5 +1,5 @@
 # ViaRewind-Legacy-Support
-[![Build Status](https://github.com/ViaVersion/ViaRewind/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/ViaVersion/ViaRewind/actions)
+[![Build Status](https://github.com/ViaVersion/ViaRewind-Legacy-Support/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/ViaVersion/ViaRewind/actions)
 [![Discord](https://img.shields.io/badge/chat-on%20discord-blue.svg)](https://viaversion.com/discord)
 
 **Provides additional features for ViaRewind for Paper servers.**

@@ -1,3 +1,21 @@
+/*
+ * This file is part of ViaRewind-Legacy-Support - https://github.com/ViaVersion/ViaRewind-Legacy-Support
+ * Copyright (C) 2016-2023 ViaVersion and contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.viaversion.viarewind.legacysupport.reflection;
 
 import sun.reflect.ReflectionFactory;
@@ -13,7 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ReflectionAPI {
-    private static Map<String, Field> fields = new HashMap<>();
+    private static final Map<String, Field> fields = new HashMap<>();
     private static boolean staticFinalModificationBlocked;
 
     static {
@@ -97,11 +115,7 @@ public class ReflectionAPI {
         }
     }
 
-    public static <E> Constructor<E> getConstructor(Class<E> clazz, Constructor<? super E> superConstructor) {
-        return (Constructor<E>) ReflectionFactory.getReflectionFactory().newConstructorForSerialization(clazz, superConstructor);
-    }
-
-    public static void setValue(Class clazz, Object object, String fieldname, Object value, boolean isFinal) throws NoSuchFieldException, IllegalAccessException {
+    public static void setValue(Class clazz, Object object, String fieldname, Object value, boolean isFinal) throws IllegalAccessException {
         Field field = getFieldAccessible(clazz, fieldname);
         if (isFinal) setFieldNotFinal(field);
         field.set(object, value);
