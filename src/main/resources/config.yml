@@ -1,24 +1,34 @@
-#Automatically put blaze powder in brewing stands for clients lower than 1.9
+# If you need help, you can join our Discord - https://viaversion.com/discord
+#
+# Automatically put blaze powder in brewing stands for clients lower than 1.9
 brewing-stand-gui-fix: true
-#Automatically put lapis lazuli in enchanting tables for clients lower than 1.8
+#
+# Automatically put lapis lazuli in enchanting tables for clients lower than 1.8
 enchanting-gui-fix: true
-#Fix the lily pad bounding box to prevent clients lower than 1.9 from glitching
+#
+# Fix the lily pad bounding box to prevent clients lower than 1.9 from glitching
 lily-pad-fix: true
-#Fix the carpet bounding box to prevent 1.7 clients from glitching on 1.14+ servers
+#
+# Fix the carpet bounding box to prevent 1.7 clients from glitching on 1.14+ servers
 carpet-fix: true
-#Fix the ladder bounding box to prevent clients lower than 1.9 from glitching
+#
+# Fix the ladder bounding box to prevent clients lower than 1.9 from glitching
 ladder-fix: true
-#If set to true, this plugin will play sounds for 1.8 and lower that got clientside on 1.9 and higher
+#
+# If set to true, this plugin will play sounds for 1.8 and lower that got clientside on 1.9 and higher
 sound-fix: true
-#If set to true, this plugin will apply velocity to 1.7 if they fall onto slime blocks
+#
+# If set to true, this plugin will apply velocity to 1.7 if they fall onto slime blocks
 slime-fix: true
-#If this plugin should apply velocity to 1.8 and lower clients to emulate elytra flight
+#
+# If this plugin should apply velocity to 1.8 and lower clients to emulate elytra flight
 elytra-fix: true
 #
 area-effect-cloud-particles: true
-#Inform your players that they are using an outdated minecraft version
-#max-version specifies the maximum protocol version of players being notified. See http://wiki.vg/Protocol_version_numbers for protocol version numbers
-#interval can be set to JOIN to notify players when joining the server. If you set it to any integer number it will broadcast the message every x ticks.
+#
+# Inform your players that they are using an outdated minecraft version
+# max-version specifies the maximum protocol version of players being notified. See http://wiki.vg/Protocol_version_numbers for protocol version numbers
+# interval can be set to JOIN to notify players when joining the server. If you set it to any integer number it will broadcast the message every x ticks.
 versioninfo:
   active: false
   max-version: 47
