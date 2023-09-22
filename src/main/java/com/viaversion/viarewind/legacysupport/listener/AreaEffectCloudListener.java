@@ -1,7 +1,7 @@
-package de.gerrygames.viarewind.legacysupport.listener;
+package com.viaversion.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
-import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
+import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;

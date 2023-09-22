@@ -1,4 +1,4 @@
-package de.gerrygames.viarewind.legacysupport.listener;
+package com.viaversion.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
 import org.bukkit.Material;

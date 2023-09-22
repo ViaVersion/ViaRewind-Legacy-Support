@@ -1,8 +1,8 @@
-package de.gerrygames.viarewind.legacysupport.injector;
+package com.viaversion.viarewind.legacysupport.injector;
 
+import com.viaversion.viarewind.legacysupport.reflection.MethodSignature;
+import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.Via;
-import de.gerrygames.viarewind.legacysupport.reflection.MethodSignature;
-import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

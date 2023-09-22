@@ -1,4 +1,4 @@
-package de.gerrygames.viarewind.legacysupport.reflection;
+package com.viaversion.viarewind.legacysupport.reflection;
 
 import java.util.Arrays;
 import java.util.Objects;

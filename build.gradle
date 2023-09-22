@@ -18,15 +18,27 @@ repositories {
     }
 }
 
+version = project.maven_version
+group = project.maven_group
+
 dependencies {
     compileOnly "com.viaversion:viaversion-api:4.6.2"
     compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
 }
 
-group = "de.gerrygames"
-version = "1.5.0-SNAPSHOT"
-description = "viarewind-legacy-support"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("plugin.yml") {
+        expand "version": project.version
+    }
+}
+
+java {
+    withSourcesJar()
+}
 
 publishing {
     publications {

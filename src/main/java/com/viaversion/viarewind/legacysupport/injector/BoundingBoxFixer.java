@@ -1,16 +1,14 @@
-package de.gerrygames.viarewind.legacysupport.injector;
+package com.viaversion.viarewind.legacysupport.injector;
 
+import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.Via;
-import de.gerrygames.viarewind.legacysupport.BukkitPlugin;
-import de.gerrygames.viarewind.legacysupport.reflection.ReflectionAPI;
+import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.logging.Level;
-import java.util.stream.Stream;
 
 public class BoundingBoxFixer {
 
