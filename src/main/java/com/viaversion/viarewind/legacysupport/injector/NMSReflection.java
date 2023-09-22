@@ -10,9 +10,8 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 public class NMSReflection {
-
-    private static int protocolVersion = -1;
     private static final int PROTOCOL_1_17 = 755;
+    private static int protocolVersion = -1;
 
     private static String version;
     private static Field playerConnectionField;
@@ -22,21 +21,7 @@ public class NMSReflection {
     }
 
     public static int getProtocolVersion() {
-        return protocolVersion == -1 ?
-                protocolVersion = Via.getAPI().getServerVersion().lowestSupportedVersion() :
-                protocolVersion;
-    }
-
-    public static Class<?> getBlockDataClass() {
-        try {
-            if (getProtocolVersion() >= PROTOCOL_1_17) {
-                return Class.forName("net.minecraft.world.level.block.state.IBlockData");
-            }
-            return getLegacyNMSClass("IBlockData");
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-        return null;
+        return protocolVersion == -1 ? protocolVersion = Via.getAPI().getServerVersion().lowestSupportedVersion() : protocolVersion;
     }
 
     public static Class<?> getBlockPositionClass() {
@@ -114,15 +99,6 @@ public class NMSReflection {
 
     public static Class<?> getLegacyNMSClass(String name) throws ClassNotFoundException {
         return Class.forName("net.minecraft.server." + getVersion() + "." + name);
-    }
-
-    public static Class<?> getCraftBukkitClass(String name) {
-        try {
-            return Class.forName("org.bukkit.craftbukkit." + getVersion() + "." + name);
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-        return null;
     }
 
     public static void sendPacket(Player player, Object packet) {
