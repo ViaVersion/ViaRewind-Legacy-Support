@@ -1,6 +1,9 @@
+import io.papermc.hangarpublishplugin.model.Platforms
+
 plugins {
     id "java-library"
     id "maven-publish"
+    id "io.papermc.hangar-publish-plugin" version "0.1.0"
 }
 
 repositories {
@@ -54,4 +57,55 @@ tasks.withType(JavaCompile) {
 
 tasks.withType(Javadoc) {
     options.encoding = "UTF-8"
+}
+
+// -----------------------------------------------------
+// Publishing
+
+def latestCommitHash() {
+    def byteOut = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        standardOutput = byteOut
+    }
+    return byteOut.toString('UTF-8').trim()
+}
+
+def latestCommitMessage() {
+    def byteOut = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'log', '-1', '--pretty=%B'
+        standardOutput = byteOut
+    }
+    return byteOut.toString('UTF-8').trim()
+}
+
+def baseVersion = project.maven_version
+def isRelease = !baseVersion.contains('-')
+def suffixedVersion = isRelease ? baseVersion : baseVersion + "+" + System.getenv("GITHUB_RUN_NUMBER")
+def commitHash = latestCommitHash()
+def changelogContent = "[${commitHash}](https://github.com/ViaVersion/iaRewind-Legacy-Support/commit/${commitHash}) ${latestCommitMessage()}"
+hangarPublish {
+    publications.register("plugin") {
+        version.set(suffixedVersion)
+        id.set("ViaRewindLegacySupport")
+        channel.set(isRelease ? "Release" : "Snapshot")
+        changelog.set(changelogContent)
+        apiKey.set(System.getenv("HANGAR_TOKEN"))
+        platforms {
+            register(Platforms.PAPER) {
+                jar.set(tasks.jar.archiveFile)
+                platformVersions.set([property('mcVersionRange') as String])
+                dependencies.hangar("ViaVersion") {
+                    required.set(true)
+                }
+                dependencies.hangar("ViaBackwards") {
+                    required.set(false)
+                }
+                dependencies.hangar("ViaRewind") {
+                    required.set(false)
+                }
+            }
+        }
+    }
 }
