@@ -1,8 +1,5 @@
 <component name="CopyrightManager">
-  <settings>
-    <module2copyright>
-      <element module="ViaRewind-Legacy-Support" copyright="viarewind-ls-gpl" />
-    </module2copyright>
+  <settings default="viarewind-ls-gpl">
     <LanguageOptions name="__TEMPLATE__">
       <option name="addBlankAfter" value="false" />
     </LanguageOptions>
