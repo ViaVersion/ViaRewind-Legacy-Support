@@ -80,7 +80,7 @@ public class BukkitPlugin extends JavaPlugin {
                 }
                 // Added in 15w44b (1.9)
                 if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("lily-pad-fix")) {
-                    BoundingBoxFixer.fixLilyPad(getLogger());
+                    BoundingBoxFixer.fixLilyPad(getLogger(), serverProtocol);
                 }
                 if (serverProtocol >= ProtocolVersion.v1_14_4.getVersion() && config.getBoolean("carpet-fix")) {
                     BoundingBoxFixer.fixCarpet(getLogger(), serverProtocol);

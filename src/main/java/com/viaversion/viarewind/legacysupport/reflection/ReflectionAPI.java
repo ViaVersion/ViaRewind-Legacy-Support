@@ -117,7 +117,7 @@ public class ReflectionAPI {
         field.set(object, value);
     }
 
-    public static void setValue(Class clazz, Object object, String fieldname, Object value) throws NoSuchFieldException, IllegalAccessException {
+    public static void setValue(Class clazz, Object object, String fieldname, Object value) throws IllegalAccessException {
         setValue(clazz, object, fieldname, value, false);
     }
 
