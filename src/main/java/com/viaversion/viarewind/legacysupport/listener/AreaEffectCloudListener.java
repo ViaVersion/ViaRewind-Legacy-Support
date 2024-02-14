@@ -41,7 +41,7 @@ public class AreaEffectCloudListener implements Listener {
 
     public AreaEffectCloudListener(final BukkitPlugin plugin) {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            final Set<Player> affectedPlayers = Bukkit.getOnlinePlayers().stream().filter(p -> Via.getAPI().getPlayerVersion(p) <= ProtocolVersion.v1_8.getVersion()).collect(Collectors.toSet());
+            final Set<Player> affectedPlayers = Bukkit.getOnlinePlayers().stream().filter(p -> Via.getAPI().getPlayerProtocolVersion(p).newerThanOrEqualTo(ProtocolVersion.v1_8)).collect(Collectors.toSet());
             effectClouds.removeIf(e -> !e.isValid());
             effectClouds.forEach(cloud -> {
                 final Location location = cloud.getLocation();

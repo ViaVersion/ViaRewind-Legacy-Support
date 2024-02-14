@@ -25,7 +25,7 @@ version = project.maven_version
 group = project.maven_group
 
 dependencies {
-    compileOnly "com.viaversion:viaversion-api:4.9.3-SNAPSHOT"
+    compileOnly "com.viaversion:viaversion-api:4.10.0-24w07a-SNAPSHOT"
     compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
 }
 

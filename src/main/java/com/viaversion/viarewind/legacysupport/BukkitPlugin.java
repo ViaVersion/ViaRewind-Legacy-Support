@@ -49,40 +49,37 @@ public class BukkitPlugin extends JavaPlugin {
 
             @Override
             public void run() {
-                int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
-                if (serverProtocol == -1) return;
+                final ProtocolVersion serverProtocol = Via.getAPI().getServerVersion().lowestSupportedProtocolVersion();
+                if (!serverProtocol.isKnown()) return;
                 cancel();
 
-                if (serverProtocol >= ProtocolVersion.v1_8.getVersion() && config.getBoolean("enchanting-gui-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new EnchantingListener(), BukkitPlugin.this);
+                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_8)) {
+                    if (config.getBoolean("enchanting-gui-fix"))
+                        Bukkit.getPluginManager().registerEvents(new EnchantingListener(), BukkitPlugin.this);
+
+                    if (config.getBoolean("slime-fix"))
+                        Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
                 }
-                if (serverProtocol >= ProtocolVersion.v1_8.getVersion() && config.getBoolean("slime-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
+                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_9)) {
+                    if (config.getBoolean("sound-fix"))
+                        Bukkit.getPluginManager().registerEvents(new SoundListener(BukkitPlugin.this), BukkitPlugin.this);
+
+                    if (config.getBoolean("ladder-fix")) // 15w31a
+                        BoundingBoxFixer.fixLadder(getLogger(), serverProtocol);
+
+                    if (config.getBoolean("area-effect-cloud-particles")) // 15w32c
+                        Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(BukkitPlugin.this), BukkitPlugin.this);
+
+                    if (config.getBoolean("elytra-fix")) // 15w40b
+                        Bukkit.getPluginManager().registerEvents(new ElytraListener(), BukkitPlugin.this);
+
+                    if (config.getBoolean("brewing-stand-gui-fix")) // 15w41b
+                        Bukkit.getPluginManager().registerEvents(new BrewingListener(), BukkitPlugin.this);
+
+                    if (config.getBoolean("lily-pad-fix")) // 15w44b
+                        BoundingBoxFixer.fixLilyPad(getLogger(), serverProtocol);
                 }
-                if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("sound-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new SoundListener(BukkitPlugin.this), BukkitPlugin.this);
-                }
-                // Added in 15w31a (1.9)
-                if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("ladder-fix")) {
-                    BoundingBoxFixer.fixLadder(getLogger(), serverProtocol);
-                }
-                // Added in 15w32c (1.9)
-                if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("area-effect-cloud-particles")) {
-                    Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(BukkitPlugin.this), BukkitPlugin.this);
-                }
-                // Added in 15w40b (1.9)
-                if (serverProtocol > ProtocolVersion.v1_9.getVersion() && config.getBoolean("elytra-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new ElytraListener(), BukkitPlugin.this);
-                }
-                // Added in 15w41b (1.9)
-                if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("brewing-stand-gui-fix")) {
-                    Bukkit.getPluginManager().registerEvents(new BrewingListener(), BukkitPlugin.this);
-                }
-                // Added in 15w44b (1.9)
-                if (serverProtocol >= ProtocolVersion.v1_9.getVersion() && config.getBoolean("lily-pad-fix")) {
-                    BoundingBoxFixer.fixLilyPad(getLogger(), serverProtocol);
-                }
-                if (serverProtocol >= ProtocolVersion.v1_14_4.getVersion() && config.getBoolean("carpet-fix")) {
+                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_14_4) && config.getBoolean("carpet-fix")) {
                     BoundingBoxFixer.fixCarpet(getLogger(), serverProtocol);
                 }
 

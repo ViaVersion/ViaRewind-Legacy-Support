@@ -19,6 +19,7 @@
 package com.viaversion.viarewind.legacysupport.listener;
 
 import com.viaversion.viaversion.api.Via;
+import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Material;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.entity.Player;
@@ -37,8 +38,8 @@ public class BrewingListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent e) {
         if (!e.hasBlock() || e.getClickedBlock().getType() != Material.BREWING_STAND) return;
         Player player = e.getPlayer();
-        int version = Via.getAPI().getPlayerVersion(player);
-        if (version > 79) return;
+        ProtocolVersion version = Via.getAPI().getPlayerProtocolVersion(player);
+        if (version.newerThan(ProtocolVersion.v1_9)) return;
         ItemStack blazePowder = new ItemStack(Material.BLAZE_POWDER);
         ItemStack playerItem = e.getItem();
         if (playerItem == null) playerItem = new ItemStack(Material.AIR);
