@@ -80,16 +80,27 @@ def latestCommitMessage() {
     return byteOut.toString('UTF-8').trim()
 }
 
+def branchName() {
+    def byteOut = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+        standardOutput = byteOut
+    }
+    return byteOut.toString('UTF-8').trim()
+}
+
 def baseVersion = project.maven_version
 def isRelease = !baseVersion.contains('-')
 def suffixedVersion = isRelease ? baseVersion : baseVersion + "+" + System.getenv("GITHUB_RUN_NUMBER")
 def commitHash = latestCommitHash()
 def changelogContent = "[${commitHash}](https://github.com/ViaVersion/iaRewind-Legacy-Support/commit/${commitHash}) ${latestCommitMessage()}"
+def branch = branchName()
+def isMainBranch = branch == "master"
 hangarPublish {
     publications.register("plugin") {
         version.set(suffixedVersion)
         id.set("ViaRewindLegacySupport")
-        channel.set(isRelease ? "Release" : "Snapshot")
+        channel.set(isRelease ? "Release" : isMainBranch ? "Snapshot" : "Alpha")
         changelog.set(changelogContent)
         apiKey.set(System.getenv("HANGAR_TOKEN"))
         platforms {
