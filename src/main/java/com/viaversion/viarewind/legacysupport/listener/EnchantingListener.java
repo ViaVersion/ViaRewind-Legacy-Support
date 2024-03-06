@@ -54,7 +54,7 @@ public class EnchantingListener implements Listener {
         if (!(e.getInventory() instanceof EnchantingInventory)) return;
 
         final Player player = (Player) e.getPlayer();
-        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_8)) return;
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_8.getVersion()) return;
 
         final PlayerInventory inv = player.getInventory();
         final ItemStack lapis = newMaterialNames ? new ItemStack(lapisMaterial) : new ItemStack(lapisMaterial, 1, (short) 4);
@@ -89,7 +89,7 @@ public class EnchantingListener implements Listener {
         if (!(e.getInventory() instanceof EnchantingInventory)) return;
 
         final Player player = (Player) e.getPlayer();
-        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_8)) return;
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_8.getVersion()) return;
 
         final PlayerInventory inv = player.getInventory();
         final EnchantingInventory replacement = (EnchantingInventory) e.getInventory();

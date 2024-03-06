@@ -49,18 +49,18 @@ public class BukkitPlugin extends JavaPlugin {
 
             @Override
             public void run() {
-                final ProtocolVersion serverProtocol = Via.getAPI().getServerVersion().lowestSupportedProtocolVersion();
-                if (!serverProtocol.isKnown()) return;
+                final int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
+                if (serverProtocol == -1) return;
                 cancel();
 
-                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_8)) {
+                if (serverProtocol >= ProtocolVersion.v1_8.getVersion()) {
                     if (config.getBoolean("enchanting-gui-fix"))
                         Bukkit.getPluginManager().registerEvents(new EnchantingListener(), BukkitPlugin.this);
 
                     if (config.getBoolean("slime-fix"))
                         Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
                 }
-                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_9)) {
+                if (serverProtocol >= ProtocolVersion.v1_9.getVersion()) {
                     if (config.getBoolean("sound-fix"))
                         Bukkit.getPluginManager().registerEvents(new SoundListener(BukkitPlugin.this), BukkitPlugin.this);
 
@@ -79,7 +79,7 @@ public class BukkitPlugin extends JavaPlugin {
                     if (config.getBoolean("lily-pad-fix")) // 15w44b
                         BoundingBoxFixer.fixLilyPad(getLogger(), serverProtocol);
                 }
-                if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_14_4) && config.getBoolean("carpet-fix")) {
+                if (serverProtocol >= ProtocolVersion.v1_14_4.getVersion() && config.getBoolean("carpet-fix")) {
                     BoundingBoxFixer.fixCarpet(getLogger(), serverProtocol);
                 }
 

@@ -36,7 +36,7 @@ public class BounceListener implements Listener {
 		if (e.getTo().getY() >= e.getFrom().getY()) return; // Only check upwards motion
 
 		final Player player = e.getPlayer();
-		if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_8)) return; // Only apply for 1.7 and below players
+		if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_8.getVersion()) return; // Only apply for 1.7 and below players
 
 		if (Math.floor(e.getTo().getY()) + 0.01 < e.getTo().getY()) return;
 		if (player.isSneaking()) return;

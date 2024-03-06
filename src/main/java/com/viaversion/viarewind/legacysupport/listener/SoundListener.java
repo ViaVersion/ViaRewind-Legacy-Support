@@ -83,9 +83,9 @@ public class SoundListener implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         final Player player = e.getPlayer();
-        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) return;
+        if (Via.getAPI().getPlayerVersion(player) >= ProtocolVersion.v1_9.getVersion()) return;
 
-        if (Via.getAPI().getServerVersion().lowestSupportedProtocolVersion().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (Via.getAPI().getServerVersion().lowestSupportedVersion() >= ProtocolVersion.v1_17.getVersion()) {
             player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
         } else {
             playBlockPlaceSoundNMS(player, e.getBlock());

@@ -30,9 +30,10 @@ import java.util.logging.Logger;
 
 public class BoundingBoxFixer {
 
-    public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
+    public static void fixLilyPad(final Logger logger, final int serverVersion) {
         try {
-            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(NMSReflection.getNMSBlock("BlockWaterLily"), serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
+            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(NMSReflection.getNMSBlock("BlockWaterLily"),
+                    serverVersion <= ProtocolVersion.v1_20_2.getVersion() ? "a" : "b");
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
         } catch (Exception ex) {
@@ -40,23 +41,23 @@ public class BoundingBoxFixer {
         }
     }
 
-    public static void fixCarpet(final Logger logger, final ProtocolVersion serverVersion) {
+    public static void fixCarpet(final Logger logger, final int serverVersion) {
         try {
-            final Class<?> blockCarpetClass = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4) ? NMSReflection.getNMSBlock("BlockCarpet") : NMSReflection.getNMSBlock("CarpetBlock");
+            final Class<?> blockCarpetClass = serverVersion <= ProtocolVersion.v1_16_4.getVersion() ? NMSReflection.getNMSBlock("BlockCarpet") : NMSReflection.getNMSBlock("CarpetBlock");
 
-            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockCarpetClass, serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
+            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockCarpetClass, serverVersion <= ProtocolVersion.v1_20_2.getVersion() ? "a" : "b");
             setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
         }
     }
 
-    public static void fixLadder(final Logger logger, final ProtocolVersion serverVersion) {
+    public static void fixLadder(final Logger logger, final int serverVersion) {
         try {
-            final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
-            final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
-            final boolean pre1_16_4 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4);
-            final boolean pre1_20_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2);
+            final boolean pre1_12_2 = serverVersion <= ProtocolVersion.v1_12_2.getVersion();
+            final boolean pre1_13_2 = serverVersion <= ProtocolVersion.v1_13_2.getVersion();
+            final boolean pre1_16_4 = serverVersion <= ProtocolVersion.v1_16_4.getVersion();
+            final boolean pre1_20_2 = serverVersion <= ProtocolVersion.v1_20_2.getVersion();
 
             final Class<?> blockLadderClass = NMSReflection.getNMSBlock("BlockLadder");
 
