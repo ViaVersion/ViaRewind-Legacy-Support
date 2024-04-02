@@ -34,12 +34,12 @@ import org.bukkit.inventory.PlayerInventory;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
-public class EnchantingListener implements Listener {
+public class EnchantingGuiEmulator implements Listener {
 
     private final boolean newMaterialNames;
     private final Material lapisMaterial;
 
-    public EnchantingListener() {
+    public EnchantingGuiEmulator() {
         newMaterialNames = Material.getMaterial("LAPIS_LAZULI") != null;
 
         if (newMaterialNames) {

@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
 import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
 
-public class BoundingBoxFixer {
+public class BlockCollisionChanges {
 
     public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
         try {

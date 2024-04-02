@@ -35,10 +35,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
-public class AreaEffectCloudListener implements Listener {
+public class AreaEffectCloudEmulator implements Listener {
     private final ArrayList<AreaEffectCloud> effectClouds = new ArrayList<>();
 
-    public AreaEffectCloudListener(final BukkitPlugin plugin) {
+    public AreaEffectCloudEmulator(final BukkitPlugin plugin) {
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             final Set<Player> affectedPlayers = Bukkit.getOnlinePlayers().stream().filter(p -> Via.getAPI().getPlayerProtocolVersion(p).newerThanOrEqualTo(ProtocolVersion.v1_8)).collect(Collectors.toSet());
             effectClouds.removeIf(e -> !e.isValid());

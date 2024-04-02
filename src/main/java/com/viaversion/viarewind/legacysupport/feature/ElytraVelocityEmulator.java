@@ -28,7 +28,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 
 @SuppressWarnings("unchecked")
-public class ElytraListener implements Listener {
+public class ElytraVelocityEmulator implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {

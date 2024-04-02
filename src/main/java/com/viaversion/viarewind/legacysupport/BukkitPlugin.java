@@ -18,15 +18,15 @@
 
 package com.viaversion.viarewind.legacysupport;
 
-import com.viaversion.viarewind.legacysupport.feature.BoundingBoxFixer;
+import com.viaversion.viarewind.legacysupport.feature.BlockCollisionChanges;
 import com.viaversion.viarewind.legacysupport.versioninfo.VersionInformer;
 import com.viaversion.viaversion.api.Via;
-import com.viaversion.viarewind.legacysupport.feature.AreaEffectCloudListener;
-import com.viaversion.viarewind.legacysupport.feature.BounceListener;
-import com.viaversion.viarewind.legacysupport.feature.BrewingListener;
-import com.viaversion.viarewind.legacysupport.feature.ElytraListener;
-import com.viaversion.viarewind.legacysupport.feature.EnchantingListener;
-import com.viaversion.viarewind.legacysupport.feature.SoundListener;
+import com.viaversion.viarewind.legacysupport.feature.AreaEffectCloudEmulator;
+import com.viaversion.viarewind.legacysupport.feature.SlimeBounceEmulator;
+import com.viaversion.viarewind.legacysupport.feature.BrewingInteractionEmulator;
+import com.viaversion.viarewind.legacysupport.feature.ElytraVelocityEmulator;
+import com.viaversion.viarewind.legacysupport.feature.EnchantingGuiEmulator;
+import com.viaversion.viarewind.legacysupport.feature.BlockPlaceSoundEmulator;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -56,35 +56,36 @@ public class BukkitPlugin extends JavaPlugin {
                 cancel();
 
                 if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_8)) {
-                    if (config.getBoolean("enchanting-gui-fix"))
-                        Bukkit.getPluginManager().registerEvents(new EnchantingListener(), BukkitPlugin.this);
-
-                    if (config.getBoolean("slime-fix"))
-                        Bukkit.getPluginManager().registerEvents(new BounceListener(), BukkitPlugin.this);
+                    if (config.getBoolean("enchanting-gui-fix")) {
+                        Bukkit.getPluginManager().registerEvents(new EnchantingGuiEmulator(), BukkitPlugin.this);
+                    }
+                    if (config.getBoolean("slime-fix")) {
+                        Bukkit.getPluginManager().registerEvents(new SlimeBounceEmulator(), BukkitPlugin.this);
+                    }
                 }
                 if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_9)) {
-                    if (config.getBoolean("sound-fix"))
-                        Bukkit.getPluginManager().registerEvents(new SoundListener(BukkitPlugin.this), BukkitPlugin.this);
-
-                    if (config.getBoolean("ladder-fix")) // 15w31a
-                        BoundingBoxFixer.fixLadder(getLogger(), serverProtocol);
-
-                    if (config.getBoolean("area-effect-cloud-particles")) // 15w32c
-                        Bukkit.getPluginManager().registerEvents(new AreaEffectCloudListener(BukkitPlugin.this), BukkitPlugin.this);
-
-                    if (config.getBoolean("elytra-fix")) // 15w40b
-                        Bukkit.getPluginManager().registerEvents(new ElytraListener(), BukkitPlugin.this);
-
-                    if (config.getBoolean("brewing-stand-gui-fix")) // 15w41b
-                        Bukkit.getPluginManager().registerEvents(new BrewingListener(), BukkitPlugin.this);
-
-                    if (config.getBoolean("lily-pad-fix")) // 15w44b
-                        BoundingBoxFixer.fixLilyPad(getLogger(), serverProtocol);
+                    if (config.getBoolean("sound-fix")) {
+                        Bukkit.getPluginManager().registerEvents(new BlockPlaceSoundEmulator(BukkitPlugin.this), BukkitPlugin.this);
+                    }
+                    if (config.getBoolean("ladder-fix")) { // 15w31a
+                        BlockCollisionChanges.fixLadder(getLogger(), serverProtocol);
+                    }
+                    if (config.getBoolean("area-effect-cloud-particles")) { // 15w32c
+                        Bukkit.getPluginManager().registerEvents(new AreaEffectCloudEmulator(BukkitPlugin.this), BukkitPlugin.this);
+                    }
+                    if (config.getBoolean("elytra-fix")) { // 15w40b
+                        Bukkit.getPluginManager().registerEvents(new ElytraVelocityEmulator(), BukkitPlugin.this);
+                    }
+                    if (config.getBoolean("brewing-stand-gui-fix")) { // 15w41b
+                        Bukkit.getPluginManager().registerEvents(new BrewingInteractionEmulator(), BukkitPlugin.this);
+                    }
+                    if (config.getBoolean("lily-pad-fix")) { // 15w44b
+                        BlockCollisionChanges.fixLilyPad(getLogger(), serverProtocol);
+                    }
                 }
                 if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_14_4) && config.getBoolean("carpet-fix")) {
-                    BoundingBoxFixer.fixCarpet(getLogger(), serverProtocol);
+                    BlockCollisionChanges.fixCarpet(getLogger(), serverProtocol);
                 }
-
                 if (config.getBoolean("versioninfo.active")) {
                     new VersionInformer(BukkitPlugin.this, config);
                 }

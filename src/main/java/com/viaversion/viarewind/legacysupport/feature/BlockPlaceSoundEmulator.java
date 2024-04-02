@@ -43,7 +43,7 @@ import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
 import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
 
 @SuppressWarnings("unchecked")
-public class SoundListener implements Listener {
+public class BlockPlaceSoundEmulator implements Listener {
 
     private static boolean isSoundCategory = false;
 
@@ -55,7 +55,7 @@ public class SoundListener implements Listener {
         }
     }
 
-    public SoundListener(final BukkitPlugin plugin) {
+    public BlockPlaceSoundEmulator(final BukkitPlugin plugin) {
         try {
             Class.forName("org.bukkit.event.entity.EntityPickupItemEvent");
 
@@ -65,7 +65,7 @@ public class SoundListener implements Listener {
                 public void onItemPickUp(EntityPickupItemEvent e) {
                     if (!(e.getEntity() instanceof Player)) return;
 
-                    SoundListener.this.onItemPickUp((Player) e.getEntity());
+                    BlockPlaceSoundEmulator.this.onItemPickUp((Player) e.getEntity());
                 }
 
             }, plugin);
@@ -74,7 +74,7 @@ public class SoundListener implements Listener {
 
                 @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
                 public void onItemPickUp(PlayerPickupItemEvent e) {
-                    SoundListener.this.onItemPickUp(e.getPlayer());
+                    BlockPlaceSoundEmulator.this.onItemPickUp(e.getPlayer());
                 }
 
             }, plugin);

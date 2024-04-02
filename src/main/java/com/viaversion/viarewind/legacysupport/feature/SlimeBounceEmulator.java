@@ -29,7 +29,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 
 @SuppressWarnings({"unchecked", "DataFlowIssue"})
-public class BounceListener implements Listener {
+public class SlimeBounceEmulator implements Listener {
 
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
