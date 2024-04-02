@@ -91,7 +91,7 @@ hangarPublish {
         changelog.set(changelogContent)
         apiKey.set(System.getenv("HANGAR_TOKEN"))
         platforms {
-            paper {
+            PAPER {
                 jar.set(tasks.jar.archiveFile)
                 platformVersions.set([property('mcVersionRange') as String])
                 dependencies.hangar("ViaVersion") {

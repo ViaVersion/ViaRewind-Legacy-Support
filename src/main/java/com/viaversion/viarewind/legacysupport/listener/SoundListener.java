@@ -40,6 +40,7 @@ import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import java.lang.reflect.Method;
+import java.util.logging.Level;
 
 @SuppressWarnings("unchecked")
 public class SoundListener implements Listener {
@@ -88,7 +89,11 @@ public class SoundListener implements Listener {
         if (Via.getAPI().getServerVersion().lowestSupportedVersion() >= ProtocolVersion.v1_17.getVersion()) {
             player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
         } else {
-            playBlockPlaceSoundNMS(player, e.getBlock());
+            try {
+                playBlockPlaceSoundNMS(player, e.getBlock());
+            } catch (Exception exception) {
+                Via.getPlatform().getLogger().log(Level.SEVERE, "Could not play block place sound.", exception);
+            }
         }
     }
 
@@ -123,67 +128,70 @@ public class SoundListener implements Listener {
 
 
     // 1.8.8 -> 1.16.5
-    private static void playBlockPlaceSoundNMS(Player player, Block block) {
-        try {
-            World world = block.getWorld();
-            Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
-            Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
-            Object blockPosition = null;
+    private static void playBlockPlaceSoundNMS(Player player, Block block) throws Exception {
+        World world = block.getWorld();
+        Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
+        Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
+        Object blockPosition = null;
 
-            if (blockPositionClass != null)
-                blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
+        if (blockPositionClass != null)
+            blockPosition = blockPositionClass.getConstructor(int.class, int.class, int.class).newInstance(block.getX(), block.getY(), block.getZ());
 
-            Method getTypeMethod = nmsWorld.getClass().getMethod("getType", blockPositionClass);
-            getTypeMethod.setAccessible(true);
+        Method getTypeMethod = nmsWorld.getClass().getMethod("getType", blockPositionClass);
+        getTypeMethod.setAccessible(true);
 
-            Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
-            Method getBlock = blockData.getClass().getMethod("getBlock");
-            getBlock.setAccessible(true);
+        Object blockData = getTypeMethod.invoke(nmsWorld, blockPosition);
+        Method getBlock = blockData.getClass().getMethod("getBlock");
+        getBlock.setAccessible(true);
 
-            Object nmsBlock = getBlock.invoke(blockData);
-            Method getStepSound = ReflectionAPI.pickMethod(
-                    nmsBlock.getClass(),
-                    new MethodSignature("w"), // 1.9 -> 1.10
-                    new MethodSignature("getStepSound", blockData.getClass()), // 1.14 -> 1.16
-                    new MethodSignature("getStepSound") // 1.11 -> 1.12
-            );
-            getStepSound.setAccessible(true);
-
-            Object soundType;
-            if (getStepSound.getParameterCount() == 0) {
-                soundType = getStepSound.invoke(nmsBlock); // 1.9 -> 1.13
-            } else {
-                soundType = getStepSound.invoke(nmsBlock, blockData); // 1.14 -> 1.16.5
-            }
-
-            Method soundEffectMethod;
-            Method volumeMethod;
-            Method pitchMethod;
-
-            try {
-                // 1.16.5
-                soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
-                volumeMethod = soundType.getClass().getMethod("getVolume");
-                pitchMethod = soundType.getClass().getMethod("getPitch");
-            } catch (NoSuchMethodException ex) {
-                // 1.9 -> 1.16.4
-                soundEffectMethod = soundType.getClass().getMethod("e");
-                volumeMethod = soundType.getClass().getMethod("a");
-                pitchMethod = soundType.getClass().getMethod("b");
-            }
-
-            Object soundEffect = soundEffectMethod.invoke(soundType);
-            float volume = (float) volumeMethod.invoke(soundType);
-            float pitch = (float) pitchMethod.invoke(soundType);
-            Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
-
-            volume = (volume + 1.0f) / 2.0f;
-            pitch *= 0.8;
-
-            playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        Object nmsBlock = getBlock.invoke(blockData);
+        Method getStepSound;
+        final int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
+        if (serverProtocol > ProtocolVersion.v1_8.getVersion() && serverProtocol < ProtocolVersion.v1_12.getVersion()) {
+            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "w");
+        } else if (serverProtocol > ProtocolVersion.v1_10.getVersion() && serverProtocol < ProtocolVersion.v1_13.getVersion()) {
+            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "getStepSound");
+        } else { // 1.14 - 1.16.5
+            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "getStepSound", blockData.getClass());
         }
+        if (getStepSound == null) {
+            Via.getPlatform().getLogger().severe("Could not find getStepSound method in " + nmsBlock.getClass().getName());
+            return;
+        }
+
+        getStepSound.setAccessible(true);
+        Object soundType;
+        if (getStepSound.getParameterCount() == 0) {
+            soundType = getStepSound.invoke(nmsBlock); // 1.9 - 1.13
+        } else {
+            soundType = getStepSound.invoke(nmsBlock, blockData); // 1.14 - 1.16.5
+        }
+
+        Method soundEffectMethod;
+        Method volumeMethod;
+        Method pitchMethod;
+
+        try {
+            // 1.16.5
+            soundEffectMethod = soundType.getClass().getMethod("getPlaceSound");
+            volumeMethod = soundType.getClass().getMethod("getVolume");
+            pitchMethod = soundType.getClass().getMethod("getPitch");
+        } catch (NoSuchMethodException ex) {
+            // 1.9 -> 1.16.4
+            soundEffectMethod = soundType.getClass().getMethod("e");
+            volumeMethod = soundType.getClass().getMethod("a");
+            pitchMethod = soundType.getClass().getMethod("b");
+        }
+
+        Object soundEffect = soundEffectMethod.invoke(soundType);
+        float volume = (float) volumeMethod.invoke(soundType);
+        float pitch = (float) pitchMethod.invoke(soundType);
+        Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
+
+        volume = (volume + 1.0f) / 2.0f;
+        pitch *= 0.8;
+
+        playSound(player, soundEffect, soundCategory, block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5, volume, pitch);
     }
 
     // 1.8.8 -> 1.16.5

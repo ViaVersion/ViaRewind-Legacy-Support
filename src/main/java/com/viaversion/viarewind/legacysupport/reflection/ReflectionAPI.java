@@ -38,34 +38,6 @@ public class ReflectionAPI {
         }
     }
 
-    /**
-     * Recursively searches for (declared) methods at a specific class and all it's superclasses
-     *
-     * @param holder     The base class where to start searching
-     * @param signatures Possible method signatures consisting of method name and parameters
-     * @return The found {@link Method} or {@code null}
-     * @throws RuntimeException If no method was found
-     */
-    public static Method pickMethod(Class<?> holder, MethodSignature... signatures) {
-        Class<?> depth = holder;
-        do {
-            for (MethodSignature signature : signatures) {
-                try {
-                    Method method = depth.getDeclaredMethod(signature.name(), signature.parameterTypes());
-                    if (signature.returnType() != null && !Objects.equals(method.getReturnType(), signature.returnType())) {
-                        continue;
-                    }
-                    if (!method.isAccessible()) {
-                        method.setAccessible(true);
-                    }
-                    return method;
-                } catch (NoSuchMethodException ignored) {
-                }
-            }
-        } while ((depth = depth.getSuperclass()) != null);
-        throw new RuntimeException("Failed to resolve method in " + holder + " using " + Arrays.toString(signatures));
-    }
-
     public static Field getField(Class clazz, String fieldname) {
         String key = clazz.getName() + ":" + fieldname;
         Field field = null;
@@ -126,6 +98,16 @@ public class ReflectionAPI {
             setValue(clazz, object, fieldname, value);
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public static Method findRecursiveMethodOrNull(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        try {
+            return clazz.getDeclaredMethod(methodName, parameterTypes);
+        } catch (NoSuchMethodException ex) {
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass == null) return null;
+            return findRecursiveMethodOrNull(superClass, methodName, parameterTypes);
         }
     }
 }
