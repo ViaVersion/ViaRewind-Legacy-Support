@@ -16,13 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.viaversion.viarewind.legacysupport.listener;
+package com.viaversion.viarewind.legacysupport.feature;
 
-import com.viaversion.viarewind.legacysupport.reflection.MethodSignature;
-import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
-import com.viaversion.viarewind.legacysupport.injector.NMSReflection;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -41,6 +38,9 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import java.lang.reflect.Method;
 import java.util.logging.Level;
+
+import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
 
 @SuppressWarnings("unchecked")
 public class SoundListener implements Listener {
@@ -131,7 +131,7 @@ public class SoundListener implements Listener {
     private static void playBlockPlaceSoundNMS(Player player, Block block) throws Exception {
         World world = block.getWorld();
         Object nmsWorld = world.getClass().getMethod("getHandle").invoke(world);
-        Class<?> blockPositionClass = NMSReflection.getBlockPositionClass();
+        Class<?> blockPositionClass = getBlockPositionClass();
         Object blockPosition = null;
 
         if (blockPositionClass != null)
@@ -148,11 +148,11 @@ public class SoundListener implements Listener {
         Method getStepSound;
         final int serverProtocol = Via.getAPI().getServerVersion().lowestSupportedVersion();
         if (serverProtocol > ProtocolVersion.v1_8.getVersion() && serverProtocol < ProtocolVersion.v1_12.getVersion()) {
-            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "w");
+            getStepSound = getMethod(nmsBlock.getClass(), "w");
         } else if (serverProtocol > ProtocolVersion.v1_10.getVersion() && serverProtocol < ProtocolVersion.v1_13.getVersion()) {
-            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "getStepSound");
+            getStepSound = getMethod(nmsBlock.getClass(), "getStepSound");
         } else { // 1.14 - 1.16.5
-            getStepSound = ReflectionAPI.findRecursiveMethodOrNull(nmsBlock.getClass(), "getStepSound", blockData.getClass());
+            getStepSound = getMethod(nmsBlock.getClass(), "getStepSound", blockData.getClass());
         }
         if (getStepSound == null) {
             Via.getPlatform().getLogger().severe("Could not find getStepSound method in " + nmsBlock.getClass().getName());
@@ -186,7 +186,7 @@ public class SoundListener implements Listener {
         Object soundEffect = soundEffectMethod.invoke(soundType);
         float volume = (float) volumeMethod.invoke(soundType);
         float pitch = (float) pitchMethod.invoke(soundType);
-        Object soundCategory = Enum.valueOf(NMSReflection.getSoundCategoryClass(), "BLOCKS");
+        Object soundCategory = Enum.valueOf(getSoundCategoryClass(), "BLOCKS");
 
         volume = (volume + 1.0f) / 2.0f;
         pitch *= 0.8;
@@ -197,7 +197,7 @@ public class SoundListener implements Listener {
     // 1.8.8 -> 1.16.5
     private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch) {
         try {
-            Object packet = NMSReflection.getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
+            Object packet = getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
                     soundEffect.getClass(), soundCategory.getClass(),
                     double.class, double.class, double.class,
                     float.class, float.class
@@ -209,7 +209,7 @@ public class SoundListener implements Listener {
 
             // Volume = 1
             // Pitch = .8
-            NMSReflection.sendPacket(player, packet);
+            sendPacket(player, packet);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

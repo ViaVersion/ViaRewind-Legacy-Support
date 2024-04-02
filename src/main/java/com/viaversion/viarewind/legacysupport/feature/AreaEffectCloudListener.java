@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.viaversion.viarewind.legacysupport.listener;
+package com.viaversion.viarewind.legacysupport.feature;
 
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
@@ -24,7 +24,6 @@ import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

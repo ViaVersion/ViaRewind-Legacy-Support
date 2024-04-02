@@ -16,9 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.viaversion.viarewind.legacysupport.injector;
+package com.viaversion.viarewind.legacysupport.feature;
 
-import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 
 import java.lang.reflect.Field;
@@ -28,11 +27,14 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
+
 public class BoundingBoxFixer {
 
     public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(NMSReflection.getNMSBlock("BlockWaterLily"), serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
+            final Field boundingBoxField = getFieldAccessible(getNMSBlockClass("BlockWaterLily"), serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
         } catch (Exception ex) {
@@ -42,9 +44,9 @@ public class BoundingBoxFixer {
 
     public static void fixCarpet(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final Class<?> blockCarpetClass = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4) ? NMSReflection.getNMSBlock("BlockCarpet") : NMSReflection.getNMSBlock("CarpetBlock");
+            final Class<?> blockCarpetClass = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4) ? getNMSBlockClass("BlockCarpet") : getNMSBlockClass("CarpetBlock");
 
-            final Field boundingBoxField = ReflectionAPI.getFieldAccessible(blockCarpetClass, serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
+            final Field boundingBoxField = getFieldAccessible(blockCarpetClass, serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
             setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
@@ -58,12 +60,12 @@ public class BoundingBoxFixer {
             final boolean pre1_16_4 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4);
             final boolean pre1_20_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2);
 
-            final Class<?> blockLadderClass = NMSReflection.getNMSBlock("BlockLadder");
+            final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
 
-            final Field boundingBoxEastField = ReflectionAPI.getFieldAccessible(blockLadderClass, pre1_12_2 ? "b" : pre1_13_2 ? "c" : pre1_16_4 ? "c" : pre1_20_2 ? "d" : "e");
-            final Field boundingBoxWestField = ReflectionAPI.getFieldAccessible(blockLadderClass, pre1_12_2 ? "c" : pre1_13_2 ? "o" : pre1_16_4 ? "d" : pre1_20_2 ? "e" : "f");
-            final Field boundingBoxSouthField = ReflectionAPI.getFieldAccessible(blockLadderClass, pre1_12_2 ? "d" : pre1_13_2 ? "p" : pre1_16_4 ? "e" : pre1_20_2 ? "f" : "g");
-            final Field boundingBoxNorthField = ReflectionAPI.getFieldAccessible(blockLadderClass, pre1_12_2 ? "e" : pre1_13_2 ? "q" : pre1_16_4 ? "f" : pre1_20_2 ? "g" : "h");
+            final Field boundingBoxEastField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "b" : pre1_13_2 ? "c" : pre1_16_4 ? "c" : pre1_20_2 ? "d" : "e");
+            final Field boundingBoxWestField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "c" : pre1_13_2 ? "o" : pre1_16_4 ? "d" : pre1_20_2 ? "e" : "f");
+            final Field boundingBoxSouthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "d" : pre1_13_2 ? "p" : pre1_16_4 ? "e" : pre1_20_2 ? "f" : "g");
+            final Field boundingBoxNorthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "e" : pre1_13_2 ? "q" : pre1_16_4 ? "f" : pre1_20_2 ? "g" : "h");
 
             setBoundingBox(boundingBoxEastField.get(null), 0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
             setBoundingBox(boundingBoxWestField.get(null), 0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);

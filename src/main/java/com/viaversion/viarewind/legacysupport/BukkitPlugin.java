@@ -18,15 +18,15 @@
 
 package com.viaversion.viarewind.legacysupport;
 
-import com.viaversion.viarewind.legacysupport.injector.BoundingBoxFixer;
+import com.viaversion.viarewind.legacysupport.feature.BoundingBoxFixer;
 import com.viaversion.viarewind.legacysupport.versioninfo.VersionInformer;
 import com.viaversion.viaversion.api.Via;
-import com.viaversion.viarewind.legacysupport.listener.AreaEffectCloudListener;
-import com.viaversion.viarewind.legacysupport.listener.BounceListener;
-import com.viaversion.viarewind.legacysupport.listener.BrewingListener;
-import com.viaversion.viarewind.legacysupport.listener.ElytraListener;
-import com.viaversion.viarewind.legacysupport.listener.EnchantingListener;
-import com.viaversion.viarewind.legacysupport.listener.SoundListener;
+import com.viaversion.viarewind.legacysupport.feature.AreaEffectCloudListener;
+import com.viaversion.viarewind.legacysupport.feature.BounceListener;
+import com.viaversion.viarewind.legacysupport.feature.BrewingListener;
+import com.viaversion.viarewind.legacysupport.feature.ElytraListener;
+import com.viaversion.viarewind.legacysupport.feature.EnchantingListener;
+import com.viaversion.viarewind.legacysupport.feature.SoundListener;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,6 +34,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BukkitPlugin extends JavaPlugin {
+
+    private ProtocolVersion serverProtocol;
 
     @Override
     public void onEnable() {
@@ -49,7 +51,7 @@ public class BukkitPlugin extends JavaPlugin {
 
             @Override
             public void run() {
-                final ProtocolVersion serverProtocol = Via.getAPI().getServerVersion().lowestSupportedProtocolVersion();
+                serverProtocol = Via.getAPI().getServerVersion().lowestSupportedProtocolVersion();
                 if (!serverProtocol.isKnown()) return;
                 cancel();
 
@@ -89,4 +91,13 @@ public class BukkitPlugin extends JavaPlugin {
             }
         }.runTaskTimer(this, 1L, 1L);
     }
+
+    public ProtocolVersion getServerProtocol() {
+        return serverProtocol;
+    }
+
+    public static BukkitPlugin getInstance() {
+        return getPlugin(BukkitPlugin.class);
+    }
+
 }
