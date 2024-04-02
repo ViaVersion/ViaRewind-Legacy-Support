@@ -75,7 +75,10 @@ public class ReflectionUtil {
         if (fieldCache.containsKey(key)) {
             return fieldCache.get(key);
         } else {
-            final Field field = failSafeGetField(clazz, fieldName);
+            Field field = null;
+            try {
+                field = clazz.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException ignored) {} // Cache non-existing field too
             fieldCache.put(key, field);
             return field;
         }
