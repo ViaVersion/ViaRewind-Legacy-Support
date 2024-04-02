@@ -18,13 +18,12 @@
 
 package com.viaversion.viarewind.legacysupport.injector;
 
-import com.viaversion.viarewind.legacysupport.reflection.MethodSignature;
-import com.viaversion.viarewind.legacysupport.reflection.ReflectionAPI;
 import com.viaversion.viaversion.api.Via;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class NMSReflection {
@@ -119,22 +118,24 @@ public class NMSReflection {
         return Class.forName("net.minecraft.server." + getVersion() + "." + name);
     }
 
-    public static void sendPacket(Player player, Object packet) {
-        try {
-            Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            if (playerConnectionField == null) {
-                playerConnectionField = Arrays.stream(nmsPlayer.getClass().getFields())
-                        .filter(field -> field.getType() == getPlayerConnectionClass()).findFirst()
-                        .orElseThrow(() -> new ReflectiveOperationException("Failed to find PlayerConnection field in EntityPlayer"));
-            }
-            Object playerConnection = playerConnectionField.get(nmsPlayer);
-            ReflectionAPI.pickMethod(
-                    playerConnection.getClass(),
-                    new MethodSignature("sendPacket", getPacketClass()),
-                    new MethodSignature("a", getPacketClass())
-            ).invoke(playerConnection, packet);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public static void sendPacket(Player player, Object packet) throws ReflectiveOperationException {
+        Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
+        if (playerConnectionField == null) {
+            playerConnectionField = Arrays.stream(nmsPlayer.getClass().getFields())
+                    .filter(field -> field.getType() == getPlayerConnectionClass()).findFirst()
+                    .orElseThrow(() -> new ReflectiveOperationException("Failed to find PlayerConnection field in EntityPlayer"));
         }
+        Object playerConnection = playerConnectionField.get(nmsPlayer);
+        Method sendPacket;
+        try { // TODO find better way
+            sendPacket = playerConnection.getClass().getDeclaredMethod("sendPacket", getPacketClass());
+        } catch (Exception e) {
+            try {
+                sendPacket = playerConnection.getClass().getDeclaredMethod("a", getPacketClass());
+            } catch (Exception e2) {
+                throw new ReflectiveOperationException("Failed to find sendPacket method in PlayerConnection");
+            }
+        }
+        sendPacket.invoke(playerConnection, packet);
     }
 }
