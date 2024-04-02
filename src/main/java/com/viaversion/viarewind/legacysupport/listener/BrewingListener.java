@@ -38,8 +38,8 @@ public class BrewingListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent e) {
         if (!e.hasBlock() || e.getClickedBlock().getType() != Material.BREWING_STAND) return;
         Player player = e.getPlayer();
-        int version = Via.getAPI().getPlayerVersion(player);
-        if (version > ProtocolVersion.v1_9.getVersion()) return;
+        ProtocolVersion version = Via.getAPI().getPlayerProtocolVersion(player);
+        if (version.newerThan(ProtocolVersion.v1_9)) return;
         ItemStack blazePowder = new ItemStack(Material.BLAZE_POWDER);
         ItemStack playerItem = e.getItem();
         if (playerItem == null) playerItem = new ItemStack(Material.AIR);
