@@ -57,9 +57,10 @@ public class VersionInformer implements Listener {
     }
 
     protected void inform(final Player player) {
-        int version = Via.getAPI().getPlayerVersion(player);
-        if (version > maxVersion) return;
-
+        final int version = Via.getAPI().getPlayerVersion(player);
+        if (version == -1 || version > maxVersion) {
+            return;
+        }
         player.sendMessage(this.versionMessage);
     }
 
