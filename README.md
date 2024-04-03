@@ -8,19 +8,18 @@
 
 This is an addon to [ViaRewind](https://github.com/ViaVersion/ViaRewind).
 
-The features of this plugin will never be added to ViaRewind, this is an addon on purpose. 
-
-ViaRewind is a multiplatform (Paper, BungeeCord, Velocity and Sponge) plugin and this plugin is for Paper only! Adding features to ViaRewind, which do not work on all the supported platforms would be too confusing.
-
-Support Status
--
-While ViaRewind-Legacy-Support will keep getting updates to function with changes to ViaVersion or ViaBackwards, it will likely not receive many bug fixes or additional features anymore.
+ViaRewind is a multiplatform (Paper, BungeeCord, Velocity and Sponge) plugin and this plugin is for Paper only!
 
 Releases / Dev Builds
 -
+
+You can find releases in the following places:
+
+- **Hangar (for our plugins)**: https://hangar.papermc.io/ViaVersion/ViaRewindLegacySupport
+
 Dev builds for **all** of our projects are on our Jenkins server:
 
-- **Jenkins**: https://ci.viaversion.com/view/ViaRewind/job/ViaRewind%20Legacy%20Support/
+- **Jenkins**: https://ci.viaversion.com/view/ViaRewind/
 
 ## Installation
 
