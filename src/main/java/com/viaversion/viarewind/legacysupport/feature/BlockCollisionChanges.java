@@ -18,6 +18,7 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 
 import java.lang.reflect.Field;
@@ -77,23 +78,19 @@ public class BlockCollisionChanges {
     }
 
     private static void setBoundingBox(Object boundingBox, double... values) throws ReflectiveOperationException {
-        if (boundingBox.getClass().getSimpleName().equals("VoxelShapeArray")) {
-            setVoxelShapeArray(boundingBox, values);
-            return;
+        switch (boundingBox.getClass().getSimpleName()) {
+            case "AxisAlignedBB": // Legacy NMS
+                setAxisAlignedBB(boundingBox, values);
+                break;
+            case "VoxelShapeArray": // Paper
+                setVoxelShapeArray(boundingBox, values);
+                break;
+            case "AABBVoxelShape": // Tuinity
+                setAABBVoxelShape(boundingBox, values);
+                break;
+            default:
+                throw new IllegalStateException("Unknown bounding box type: " + boundingBox.getClass().getName());
         }
-
-        if (boundingBox.getClass().getSimpleName().equals("AxisAlignedBB")) {
-            setAxisAlignedBB(boundingBox, values);
-            return;
-        }
-
-        // Tuinity support
-        if (boundingBox.getClass().getSimpleName().equals("AABBVoxelShape")) {
-            setAABBVoxelShape(boundingBox, values);
-            return;
-        }
-
-        throw new IllegalStateException("Unknown bounding box type: " + boundingBox.getClass().getName());
     }
 
     private static void setAABBVoxelShape(Object boundingBox, double[] values) throws ReflectiveOperationException {
@@ -143,5 +140,21 @@ public class BlockCollisionChanges {
             field.setAccessible(true);
             field.set(voxelShapeArray, wrapMethod.invoke(null, (Object) array));
         }
+
+        // Handle Paper voxel shape caching by clearing the cache
+        final Class<?> voxelShape = voxelShapeArray.getClass().getSuperclass();
+
+        final Field shape = getFieldAccessible(voxelShape, "a");
+        final Field cachedShapeData = getFieldAccessible(shape.getType(), "cachedShapeData");
+        if (cachedShapeData == null) { // No Paper or too old version
+            return;
+        }
+        cachedShapeData.set(shape.get(voxelShapeArray), null);
+
+        final Field isEmpty = getFieldAccessible(voxelShape, "isEmpty");
+        isEmpty.setBoolean(voxelShapeArray, true);
+
+        final Method initCache = voxelShape.getDeclaredMethod("initCache");
+        initCache.invoke(voxelShapeArray);
     }
 }
