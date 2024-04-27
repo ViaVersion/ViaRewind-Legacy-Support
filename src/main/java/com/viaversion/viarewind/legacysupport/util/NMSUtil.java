@@ -87,9 +87,9 @@ public class NMSUtil {
     }
 
     public static void sendPacket(final Player player, final Object packet) {
-        Object nmsPlayer = null;
+        Object nmsPlayer;
         try {
-            player.getClass().getMethod("getHandle").invoke(player);
+            nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
         } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
             BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to get EntityPlayer from player", e);
             return;
