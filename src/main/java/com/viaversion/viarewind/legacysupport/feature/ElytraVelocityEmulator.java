@@ -34,7 +34,9 @@ public class ElytraVelocityEmulator implements Listener {
     public void onPlayerMove(PlayerMoveEvent e) {
         final Player player = e.getPlayer();
 
-        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) return; // Only apply for 1.8 and below players
+        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) {
+            return; // Only apply for 1.8 and below players
+        }
         if (!player.isGliding()) return; // Only apply if the player is gliding
 
         final Vector direction = player.getLocation().getDirection();
