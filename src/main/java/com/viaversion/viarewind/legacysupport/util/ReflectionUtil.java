@@ -65,7 +65,9 @@ public class ReflectionUtil {
             return clazz.getDeclaredMethod(methodName, parameterTypes);
         } catch (NoSuchMethodException ex) {
             final Class<?> superClass = clazz.getSuperclass();
-            if (superClass == null) return null;
+            if (superClass == null) {
+                return null;
+            }
             return getMethod(superClass, methodName, parameterTypes);
         }
     }

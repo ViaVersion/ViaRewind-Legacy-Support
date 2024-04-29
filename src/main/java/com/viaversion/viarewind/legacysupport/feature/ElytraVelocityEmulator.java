@@ -18,6 +18,9 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.BukkitPlugin;
+import com.viaversion.viarewind.legacysupport.util.NMSUtil;
+import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.entity.Player;
@@ -27,8 +30,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+
 @SuppressWarnings("unchecked")
 public class ElytraVelocityEmulator implements Listener {
+
+    private boolean isGliding(final ProtocolVersion version, final Player player) {
+        if (version.olderThanOrEqualTo(ProtocolVersion.v1_9_1)) {
+            final Object nmsPlayer = NMSUtil.getNMSPlayer(player);
+            if (nmsPlayer == null) return false;
+
+            try {
+                final Method getFlag = ReflectionUtil.getMethod(nmsPlayer.getClass(), "getFlag", int.class);
+                return (boolean) getFlag.invoke(nmsPlayer, 7);
+            } catch (Exception e) {
+                BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to get player flag", e);
+            }
+        }
+        return player.isGliding();
+    }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
@@ -37,7 +58,10 @@ public class ElytraVelocityEmulator implements Listener {
         if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) {
             return; // Only apply for 1.8 and below players
         }
-        if (!player.isGliding()) return; // Only apply if the player is gliding
+        final ProtocolVersion serverVersion = BukkitPlugin.getInstance().getServerProtocol();
+        if (!isGliding(serverVersion, player)) {
+            return; // Only apply if the player is gliding
+        }
 
         final Vector direction = player.getLocation().getDirection();
         final Vector velocity = player.getVelocity();
