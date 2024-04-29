@@ -126,7 +126,7 @@ public class NMSUtil {
             return;
         }
         try {
-            final Method sendPacket = ReflectionUtil.findMethod(player.getClass(), new String[] {"sendPacket", "a"}, getPacketClass());
+            final Method sendPacket = ReflectionUtil.findMethod(playerConnection.getClass(), new String[] {"sendPacket", "a"}, getPacketClass());
             sendPacket.invoke(playerConnection, packet);
         } catch (IllegalAccessException | InvocationTargetException | NullPointerException e) {
             BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to send packet to player", e);
