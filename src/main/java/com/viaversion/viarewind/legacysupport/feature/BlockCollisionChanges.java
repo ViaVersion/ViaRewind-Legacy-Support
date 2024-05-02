@@ -18,7 +18,6 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
-import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 
 import java.lang.reflect.Field;
@@ -82,7 +81,8 @@ public class BlockCollisionChanges {
             case "AxisAlignedBB": // Legacy NMS
                 setAxisAlignedBB(boundingBox, values);
                 break;
-            case "VoxelShapeArray": // Paper
+            case "VoxelShapeArray": // Paper 1.20.4-
+            case "ArrayVoxelShape": // Paper 1.20.5+
                 setVoxelShapeArray(boundingBox, values);
                 break;
             case "AABBVoxelShape": // Tuinity
