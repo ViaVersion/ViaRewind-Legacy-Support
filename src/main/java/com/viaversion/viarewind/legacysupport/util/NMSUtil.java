@@ -35,7 +35,9 @@ public class NMSUtil {
     private static Field playerConnectionField;
 
     static {
-        nmsVersionPackage = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        if (BukkitPlugin.getInstance().getServerProtocol().olderThan(ProtocolVersion.v1_17)) {
+            nmsVersionPackage = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        }
     }
 
     public static Class<?> getBlockPositionClass() {
