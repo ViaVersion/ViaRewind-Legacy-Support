@@ -18,6 +18,7 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 
 import java.lang.reflect.Field;
@@ -154,7 +155,10 @@ public class BlockCollisionChanges {
         final Field isEmpty = getFieldAccessible(voxelShape, "isEmpty");
         isEmpty.setBoolean(voxelShapeArray, true);
 
-        final Method initCache = voxelShape.getDeclaredMethod("initCache");
+        final Method initCache = ReflectionUtil.findMethod(voxelShape, new String[]{ "initCache", "moonrise$initCache" });
+        if (initCache == null) {
+            throw new IllegalStateException("Could not find initCache method in " + voxelShape.getName());
+        }
         initCache.invoke(voxelShapeArray);
     }
 }
