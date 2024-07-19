@@ -34,6 +34,8 @@ public class NMSUtil {
     public static String nmsVersionPackage;
     private static Field playerConnectionField;
 
+    public static final boolean NEWER_THAN_V1_20_5 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_20_5);
+
     static {
         if (BukkitPlugin.getInstance().getServerProtocol().olderThan(ProtocolVersion.v1_17)) {
             nmsVersionPackage = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
