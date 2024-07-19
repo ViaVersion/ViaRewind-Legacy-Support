@@ -18,6 +18,7 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.util.NMSUtil;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
@@ -45,6 +46,9 @@ public class AreaEffectCloudEmulator implements Listener {
             effectClouds.forEach(cloud -> {
                 final Location location = cloud.getLocation();
                 final float radius = cloud.getRadius();
+                final Object data = NMSUtil.NEWER_THAN_V1_20_5
+                        ? cloud.getColor()
+                        : null;
 
                 float area = (float) Math.PI * radius * radius;
 
@@ -67,7 +71,8 @@ public class AreaEffectCloudEmulator implements Listener {
                                     cloud.getParticle(),
                                     location.getX() + f3, location.getY(), location.getZ() + f6,
                                     0,
-                                    r / 255f, g / 255f, b / 255f
+                                    r / 255f, g / 255f, b / 255f,
+                                    data
                             );
                         });
                     }
