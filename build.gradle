@@ -16,8 +16,10 @@ repositories {
     }
 }
 
-version = project.maven_version
-group = project.maven_group
+base {
+    version = project.maven_version
+    group = project.maven_group
+}
 
 dependencies {
     compileOnly "com.viaversion:viaversion-api:4.10.0"
