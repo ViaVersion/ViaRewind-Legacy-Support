@@ -23,7 +23,7 @@ base {
 
 dependencies {
     compileOnly "com.viaversion:viaversion-api:4.10.0"
-    compileOnly "org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT"
+    compileOnly "org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT"
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
