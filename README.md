@@ -29,7 +29,7 @@ Installing this plugin requires nothing more than putting it in your plugins fol
 
 - The **Lily Pad** bounding box is being modified. This prevents 1.7.x-1.8.x from glitching if they try to walk over **Lily Pads**.
 - The **Ladder** bounding box is being modified. This prevents 1.7.x-1.8.x from glitching if they try to climb **Ladders**.
-- If a 1.7.x player opens an **Enchantment Table** this plugin takes Lapis Lazuli from his/her inventory and puts it in the **Enchantment Table**.
+- If a 1.7.x player opens an **Enchantment Table** this plugin takes Lapis Lazuli from their inventory and puts it in the **Enchantment Table**.
 - 1.7.x-1.8.x can interact with **Brewing Stands** to add/remove Blaze Powder to/from them.
 - Play block placement and item pickup **sounds** to 1.7.x-1.8.x players.
 - Velocity is applied during **Elytra flight** for players below 1.9.
