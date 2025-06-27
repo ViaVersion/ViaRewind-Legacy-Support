@@ -1,5 +1,6 @@
 name: ViaRewind-Legacy-Support
 version: ${version}
+description: ${description}
 main: com.viaversion.viarewind.legacysupport.BukkitPlugin
 api-version: 1.13
 
