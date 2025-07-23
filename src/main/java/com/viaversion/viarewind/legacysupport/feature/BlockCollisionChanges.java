@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,22 +57,48 @@ public class BlockCollisionChanges {
 
     public static void fixLadder(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
-            final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
-            final boolean pre1_16_4 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4);
-            final boolean pre1_20_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2);
+            if(serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5))
+            {
+                final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
+                final Field shapesField = getFieldAccessible(blockLadderClass, "d"); // SHAPES field
+                shapesField.setAccessible(true);
 
-            final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
+                Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
+                Method boxZMethod = blockClass.getDeclaredMethod("boxZ", double.class, double.class, double.class);
+                boxZMethod.setAccessible(true);
+                Object voxelShape = boxZMethod.invoke(null, 16.0, 14.0, 16.0);
 
-            final Field boundingBoxEastField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "b" : pre1_13_2 ? "c" : pre1_16_4 ? "c" : pre1_20_2 ? "d" : "e");
-            final Field boundingBoxWestField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "c" : pre1_13_2 ? "o" : pre1_16_4 ? "d" : pre1_20_2 ? "e" : "f");
-            final Field boundingBoxSouthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "d" : pre1_13_2 ? "p" : pre1_16_4 ? "e" : pre1_20_2 ? "f" : "g");
-            final Field boundingBoxNorthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "e" : pre1_13_2 ? "q" : pre1_16_4 ? "f" : pre1_20_2 ? "g" : "h");
+                Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
+                Class<?> voxelShapeInterface = Class.forName("net.minecraft.world.phys.shapes.VoxelShape");
+                Method rotateHorizontalMethod = shapesClass.getDeclaredMethod("rotateHorizontal", voxelShapeInterface);
+                rotateHorizontalMethod.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> rotatedMap = (Map<Object, Object>) rotateHorizontalMethod.invoke(null, voxelShape);
 
-            setBoundingBox(boundingBoxEastField.get(null), 0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
-            setBoundingBox(boundingBoxWestField.get(null), 0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
-            setBoundingBox(boundingBoxSouthField.get(null), 0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
-            setBoundingBox(boundingBoxNorthField.get(null), 0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> shapes = (Map<Object, Object>) shapesField.get(null);
+                shapes.clear();
+                shapes.putAll(rotatedMap);
+            }
+            else
+            {
+                final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
+                final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
+                final boolean pre1_16_4 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4);
+                final boolean pre1_20_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2);
+
+                final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
+
+                final Field boundingBoxEastField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "b" : pre1_13_2 ? "c" : pre1_16_4 ? "c" : pre1_20_2 ? "d" : "e");
+                final Field boundingBoxWestField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "c" : pre1_13_2 ? "o" : pre1_16_4 ? "d" : pre1_20_2 ? "e" : "f");
+                final Field boundingBoxSouthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "d" : pre1_13_2 ? "p" : pre1_16_4 ? "e" : pre1_20_2 ? "f" : "g");
+                final Field boundingBoxNorthField = getFieldAccessible(blockLadderClass, pre1_12_2 ? "e" : pre1_13_2 ? "q" : pre1_16_4 ? "f" : pre1_20_2 ? "g" : "h");
+
+                setBoundingBox(boundingBoxEastField.get(null), 0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
+                setBoundingBox(boundingBoxWestField.get(null), 0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+                setBoundingBox(boundingBoxSouthField.get(null), 0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
+                setBoundingBox(boundingBoxNorthField.get(null), 0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
+            }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Could not fix ladder bounding box.", ex);
         }
