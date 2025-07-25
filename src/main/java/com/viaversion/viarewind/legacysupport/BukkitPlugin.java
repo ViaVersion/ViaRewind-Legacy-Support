@@ -18,6 +18,7 @@
 
 package com.viaversion.viarewind.legacysupport;
 
+import com.viaversion.viarewind.legacysupport.feature.AnvilCostFix;
 import com.viaversion.viarewind.legacysupport.feature.BlockCollisionChanges;
 import com.viaversion.viarewind.legacysupport.versioninfo.VersionInformer;
 import com.viaversion.viaversion.api.Via;
@@ -58,6 +59,18 @@ public class BukkitPlugin extends JavaPlugin {
         }
 
         final FileConfiguration config = getConfig();
+
+        System.out.println("severProtocol: " + serverProtocol);
+
+        if (serverProtocol.equals(ProtocolVersion.v1_8)) {
+            System.out.println("step 1");
+            if (config.getBoolean("anvil-cost-fix")) {
+                System.out.println("fix 2");
+                Bukkit.getPluginManager().registerEvents(new AnvilCostFix(), BukkitPlugin.this);
+                System.out.println("rgisetered");
+            }
+        }
+
         if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_8)) {
             if (config.getBoolean("enchanting-gui-fix")) {
                 Bukkit.getPluginManager().registerEvents(new EnchantingGuiEmulator(), BukkitPlugin.this);
@@ -66,6 +79,7 @@ public class BukkitPlugin extends JavaPlugin {
                 Bukkit.getPluginManager().registerEvents(new SlimeBounceEmulator(), BukkitPlugin.this);
             }
         }
+
         if (serverProtocol.newerThanOrEqualTo(ProtocolVersion.v1_9)) {
             if (config.getBoolean("sound-fix")) {
                 Bukkit.getPluginManager().registerEvents(new BlockPlaceSoundEmulator(BukkitPlugin.this), BukkitPlugin.this);
