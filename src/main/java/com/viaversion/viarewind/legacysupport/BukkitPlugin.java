@@ -60,14 +60,9 @@ public class BukkitPlugin extends JavaPlugin {
 
         final FileConfiguration config = getConfig();
 
-        System.out.println("severProtocol: " + serverProtocol);
-
         if (serverProtocol.equals(ProtocolVersion.v1_8)) {
-            System.out.println("step 1");
             if (config.getBoolean("anvil-cost-fix")) {
-                System.out.println("fix 2");
                 Bukkit.getPluginManager().registerEvents(new AnvilCostFix(), BukkitPlugin.this);
-                System.out.println("rgisetered");
             }
         }
 
