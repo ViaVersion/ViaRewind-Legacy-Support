@@ -6,6 +6,9 @@ brewing-stand-gui-fix: true
 # Automatically put lapis lazuli in enchanting tables for clients lower than 1.8
 enchanting-gui-fix: true
 #
+# Fixes anvil cost on 1.8 servers for clients lower than 1.8
+anvil-cost-fix: true
+#
 # Fix the lily pad bounding box to prevent clients lower than 1.9 from glitching
 lily-pad-fix: true
 #
