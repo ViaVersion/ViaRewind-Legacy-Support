@@ -29,7 +29,7 @@ tasks {
         val projectVersion = project.version
         val projectDescription = project.description
         filesMatching("plugin.yml") {
-            expand("version" to projectVersion, "description" to projectDescription)
+            expand(mapOf("version" to projectVersion, "description" to projectDescription))
         }
     }
 }
