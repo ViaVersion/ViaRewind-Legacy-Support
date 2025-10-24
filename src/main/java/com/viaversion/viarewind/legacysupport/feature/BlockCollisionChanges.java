@@ -21,10 +21,13 @@ package com.viaversion.viarewind.legacysupport.feature;
 import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,30 +60,126 @@ public class BlockCollisionChanges {
 
     public static void fixLadder(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            if(serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5))
-            {
+            if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
                 final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
-                final Field shapesField = getFieldAccessible(blockLadderClass, "d"); // SHAPES field
-                shapesField.setAccessible(true);
 
-                Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
-                Method boxZMethod = blockClass.getDeclaredMethod("boxZ", double.class, double.class, double.class);
-                boxZMethod.setAccessible(true);
-                Object voxelShape = boxZMethod.invoke(null, 16.0, 14.0, 16.0);
+                final Map<String, double[]> overrides = new HashMap<String, double[]>();
+                overrides.put("EAST", new double[]{0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D});
+                overrides.put("WEST", new double[]{0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D});
+                overrides.put("SOUTH", new double[]{0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D});
+                overrides.put("NORTH", new double[]{0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D});
 
-                Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
-                Class<?> voxelShapeInterface = Class.forName("net.minecraft.world.phys.shapes.VoxelShape");
-                Method rotateHorizontalMethod = shapesClass.getDeclaredMethod("rotateHorizontal", voxelShapeInterface);
-                rotateHorizontalMethod.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                Map<Object, Object> rotatedMap = (Map<Object, Object>) rotateHorizontalMethod.invoke(null, voxelShape);
+                Field shapesField = null;
+                for (Field field : blockLadderClass.getDeclaredFields()) {
+                    if (!Modifier.isStatic(field.getModifiers())) {
+                        continue;
+                    }
+                    if (!Map.class.isAssignableFrom(field.getType())) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+                    shapesField = field;
+                    break;
+                }
 
-                @SuppressWarnings("unchecked")
-                Map<Object, Object> shapes = (Map<Object, Object>) shapesField.get(null);
-                shapes.clear();
-                shapes.putAll(rotatedMap);
-            }
-            else
+                if (shapesField != null) {
+                    final Object rawShapes = shapesField.get(null);
+                    ReflectionUtil.removeFinal(shapesField);
+
+                    final Class<?> directionClass = Class.forName("net.minecraft.core.Direction");
+                    final Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
+                    final Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
+
+                    Method shapesBoxMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
+                    if (shapesBoxMethod != null) {
+                        shapesBoxMethod.setAccessible(true);
+                    }
+
+                    Method blockBoxMethod = ReflectionUtil.findMethod(blockClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
+                    if (blockBoxMethod != null) {
+                        blockBoxMethod.setAccessible(true);
+                    }
+
+                    Method shapesCreateMethod = null;
+                    Constructor<?> aabbConstructor = null;
+                    if (shapesBoxMethod == null) {
+                        final Class<?> aabbClass = Class.forName("net.minecraft.world.phys.AABB");
+                        shapesCreateMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"create", "a"}, aabbClass);
+                        if (shapesCreateMethod != null) {
+                            shapesCreateMethod.setAccessible(true);
+                            aabbConstructor = aabbClass.getDeclaredConstructor(double.class, double.class, double.class, double.class, double.class, double.class);
+                            aabbConstructor.setAccessible(true);
+                        }
+                    }
+
+                    final Class<?> directionClassFinal = directionClass;
+                    Map<Object, Object> shapes;
+                    try {
+                        final Constructor<?> enumMapConstructor = EnumMap.class.getDeclaredConstructor(Class.class);
+                        enumMapConstructor.setAccessible(true);
+                        @SuppressWarnings("unchecked")
+                        final Map<Object, Object> enumMap = (Map<Object, Object>) enumMapConstructor.newInstance(directionClassFinal);
+                        shapes = enumMap;
+                    } catch (ReflectiveOperationException ignored) {
+                        shapes = new HashMap<>();
+                    }
+
+                    if (rawShapes instanceof Map<?, ?>) {
+                        shapes.putAll((Map<?, ?>) rawShapes);
+                    }
+
+                    final Method directionValueOf = directionClass.getMethod("valueOf", String.class);
+                    directionValueOf.setAccessible(true);
+
+                    for (Map.Entry<String, double[]> entry : overrides.entrySet()) {
+                        final Object direction = directionValueOf.invoke(null, entry.getKey());
+                        final Object voxelShape = createVoxelShape(shapesBoxMethod, blockBoxMethod, shapesCreateMethod, aabbConstructor, entry.getValue());
+                        shapes.put(direction, voxelShape);
+                    }
+
+                    shapesField.set(null, shapes);
+                } else {
+                    final Class<?> voxelShapeInterface = Class.forName("net.minecraft.world.phys.shapes.VoxelShape");
+
+                    boolean updated = false;
+                    for (Field field : blockLadderClass.getDeclaredFields()) {
+                        if (!Modifier.isStatic(field.getModifiers())) {
+                            continue;
+                        }
+                        field.setAccessible(true);
+                        final Object shapeObject = field.get(null);
+                        if (shapeObject == null) {
+                            continue;
+                        }
+                        if (!voxelShapeInterface.isAssignableFrom(shapeObject.getClass())
+                                && !shapeObject.getClass().getSimpleName().contains("VoxelShape")) {
+                            continue;
+                        }
+
+                        final double[] currentBounds = getBoundingBoxValues(shapeObject);
+                        if (currentBounds == null) {
+                            continue;
+                        }
+
+                        final String orientation = detectOrientation(currentBounds);
+                        if (orientation == null) {
+                            continue;
+                        }
+
+                        final double[] override = overrides.get(orientation);
+                        if (override == null) {
+                            continue;
+                        }
+
+                        setBoundingBox(shapeObject, override);
+                        updated = true;
+                    }
+
+                    if (!updated) {
+                        throw new IllegalStateException("Could not adjust ladder shapes using fallback path for modern versions");
+                    }
+                }
+            } else
             {
                 final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
                 final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
@@ -187,5 +286,115 @@ public class BlockCollisionChanges {
             throw new IllegalStateException("Could not find initCache method in " + voxelShape.getName());
         }
         initCache.invoke(voxelShapeArray);
+    }
+
+    private static double[] getBoundingBoxValues(final Object boundingBox) throws ReflectiveOperationException {
+        switch (boundingBox.getClass().getSimpleName()) {
+            case "AxisAlignedBB":
+                return getAxisAlignedBBValues(boundingBox);
+            case "VoxelShapeArray":
+            case "ArrayVoxelShape":
+                return getVoxelShapeArrayValues(boundingBox);
+            case "AABBVoxelShape":
+                return getAABBVoxelShapeValues(boundingBox);
+            default:
+                return null;
+        }
+    }
+
+    private static double[] getAABBVoxelShapeValues(final Object boundingBox) throws ReflectiveOperationException {
+        for (Field field : boundingBox.getClass().getFields()) {
+            if (field.getType().getSimpleName().equals("AxisAlignedBB")) {
+                return getBoundingBoxValues(field.get(boundingBox));
+            }
+        }
+        return null;
+    }
+
+    private static double[] getAxisAlignedBBValues(final Object boundingBox) throws ReflectiveOperationException {
+        final Field[] doubleFields = Arrays.stream(boundingBox.getClass().getDeclaredFields()).filter(f -> f.getType() == double.class && !Modifier.isStatic(f.getModifiers())).toArray(Field[]::new);
+
+        if (doubleFields.length < 6) {
+            throw new IllegalStateException("Invalid field count for " + boundingBox.getClass().getName() + ": " + doubleFields.length);
+        }
+
+        final double[] values = new double[6];
+        for (int i = 0; i < 6; i++) {
+            final Field currentField = doubleFields[i];
+            currentField.setAccessible(true);
+            values[i] = currentField.getDouble(boundingBox);
+        }
+        return values;
+    }
+
+    private static double[] getVoxelShapeArrayValues(final Object voxelShapeArray) throws ReflectiveOperationException {
+        final Field[] doubleListFields = Arrays.stream(voxelShapeArray.getClass().getDeclaredFields()).filter(f -> f.getType().getSimpleName().equals("DoubleList")).toArray(Field[]::new);
+
+        if (doubleListFields.length < 3) {
+            throw new IllegalStateException("Invalid field count for " + voxelShapeArray.getClass().getName() + ": " + doubleListFields.length);
+        }
+
+        final double[] values = new double[6];
+
+        for (int i = 0; i < 3; i++) {
+            final Field field = doubleListFields[i];
+            field.setAccessible(true);
+            final Object doubleList = field.get(voxelShapeArray);
+            if (doubleList == null) {
+                return null;
+            }
+
+            final Method getDouble = ReflectionUtil.findMethod(doubleList.getClass(), new String[]{"getDouble", "get"}, int.class);
+            if (getDouble == null) {
+                return null;
+            }
+            getDouble.setAccessible(true);
+
+            values[i] = ((Number) getDouble.invoke(doubleList, 0)).doubleValue();
+            values[i + 3] = ((Number) getDouble.invoke(doubleList, 1)).doubleValue();
+        }
+
+        return values;
+    }
+
+    private static String detectOrientation(final double[] bounds) {
+        final double epsilon = 1.0E-3;
+        final double minX = bounds[0];
+        final double minZ = bounds[2];
+        final double maxX = bounds[3];
+        final double maxZ = bounds[5];
+
+        if (minX <= epsilon && maxX <= 0.5D) {
+            return "EAST";
+        }
+        if (maxX >= 1.0D - epsilon && minX >= 0.5D) {
+            return "WEST";
+        }
+        if (minZ <= epsilon && maxZ <= 0.5D) {
+            return "SOUTH";
+        }
+        if (maxZ >= 1.0D - epsilon && minZ >= 0.5D) {
+            return "NORTH";
+        }
+        return null;
+    }
+
+    private static Object createVoxelShape(final Method shapesBoxMethod, final Method blockBoxMethod,
+                                           final Method shapesCreateMethod, final Constructor<?> aabbConstructor,
+                                           final double[] values) throws ReflectiveOperationException {
+        if (shapesBoxMethod != null) {
+            return shapesBoxMethod.invoke(null, values[0], values[1], values[2], values[3], values[4], values[5]);
+        }
+        if (shapesCreateMethod != null && aabbConstructor != null) {
+            final Object aabb = aabbConstructor.newInstance(values[0], values[1], values[2], values[3], values[4], values[5]);
+            return shapesCreateMethod.invoke(null, aabb);
+        }
+        if (blockBoxMethod != null) {
+            final double scale = 16.0D;
+            return blockBoxMethod.invoke(null,
+                    values[0] * scale, values[1] * scale, values[2] * scale,
+                    values[3] * scale, values[4] * scale, values[5] * scale);
+        }
+        throw new IllegalStateException("Unable to create voxel shape for ladder bounding box.");
     }
 }
