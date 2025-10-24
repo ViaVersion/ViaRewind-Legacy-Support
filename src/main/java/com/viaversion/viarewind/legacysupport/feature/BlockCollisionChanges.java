@@ -26,7 +26,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -69,7 +68,7 @@ public class BlockCollisionChanges {
                 overrides.put("SOUTH", new double[]{0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D});
                 overrides.put("NORTH", new double[]{0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D});
 
-                Field shapesField = null;
+                Map<Object, Object> shapesMap = null;
                 for (Field field : blockLadderClass.getDeclaredFields()) {
                     if (!Modifier.isStatic(field.getModifiers())) {
                         continue;
@@ -78,106 +77,26 @@ public class BlockCollisionChanges {
                         continue;
                     }
                     field.setAccessible(true);
-                    shapesField = field;
-                    break;
+                    final Object value = field.get(null);
+                    if (value instanceof Map<?, ?>) {
+                        @SuppressWarnings("unchecked")
+                        final Map<Object, Object> casted = (Map<Object, Object>) value;
+                        shapesMap = casted;
+                        break;
+                    }
                 }
 
-                if (shapesField != null) {
-                    final Object rawShapes = shapesField.get(null);
-                    ReflectionUtil.removeFinal(shapesField);
+                boolean updated = false;
+                if (shapesMap != null) {
+                    updated = updateShapesMap(shapesMap, overrides);
+                }
 
-                    final Class<?> directionClass = Class.forName("net.minecraft.core.Direction");
-                    final Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
-                    final Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
+                if (!updated) {
+                    updated = updateShapeConstants(blockLadderClass, overrides);
+                }
 
-                    Method shapesBoxMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
-                    if (shapesBoxMethod != null) {
-                        shapesBoxMethod.setAccessible(true);
-                    }
-
-                    Method blockBoxMethod = ReflectionUtil.findMethod(blockClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
-                    if (blockBoxMethod != null) {
-                        blockBoxMethod.setAccessible(true);
-                    }
-
-                    Method shapesCreateMethod = null;
-                    Constructor<?> aabbConstructor = null;
-                    if (shapesBoxMethod == null) {
-                        final Class<?> aabbClass = Class.forName("net.minecraft.world.phys.AABB");
-                        shapesCreateMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"create", "a"}, aabbClass);
-                        if (shapesCreateMethod != null) {
-                            shapesCreateMethod.setAccessible(true);
-                            aabbConstructor = aabbClass.getDeclaredConstructor(double.class, double.class, double.class, double.class, double.class, double.class);
-                            aabbConstructor.setAccessible(true);
-                        }
-                    }
-
-                    final Class<?> directionClassFinal = directionClass;
-                    Map<Object, Object> shapes;
-                    try {
-                        final Constructor<?> enumMapConstructor = EnumMap.class.getDeclaredConstructor(Class.class);
-                        enumMapConstructor.setAccessible(true);
-                        @SuppressWarnings("unchecked")
-                        final Map<Object, Object> enumMap = (Map<Object, Object>) enumMapConstructor.newInstance(directionClassFinal);
-                        shapes = enumMap;
-                    } catch (ReflectiveOperationException ignored) {
-                        shapes = new HashMap<>();
-                    }
-
-                    if (rawShapes instanceof Map<?, ?>) {
-                        shapes.putAll((Map<?, ?>) rawShapes);
-                    }
-
-                    final Method directionValueOf = directionClass.getMethod("valueOf", String.class);
-                    directionValueOf.setAccessible(true);
-
-                    for (Map.Entry<String, double[]> entry : overrides.entrySet()) {
-                        final Object direction = directionValueOf.invoke(null, entry.getKey());
-                        final Object voxelShape = createVoxelShape(shapesBoxMethod, blockBoxMethod, shapesCreateMethod, aabbConstructor, entry.getValue());
-                        shapes.put(direction, voxelShape);
-                    }
-
-                    shapesField.set(null, shapes);
-                } else {
-                    final Class<?> voxelShapeInterface = Class.forName("net.minecraft.world.phys.shapes.VoxelShape");
-
-                    boolean updated = false;
-                    for (Field field : blockLadderClass.getDeclaredFields()) {
-                        if (!Modifier.isStatic(field.getModifiers())) {
-                            continue;
-                        }
-                        field.setAccessible(true);
-                        final Object shapeObject = field.get(null);
-                        if (shapeObject == null) {
-                            continue;
-                        }
-                        if (!voxelShapeInterface.isAssignableFrom(shapeObject.getClass())
-                                && !shapeObject.getClass().getSimpleName().contains("VoxelShape")) {
-                            continue;
-                        }
-
-                        final double[] currentBounds = getBoundingBoxValues(shapeObject);
-                        if (currentBounds == null) {
-                            continue;
-                        }
-
-                        final String orientation = detectOrientation(currentBounds);
-                        if (orientation == null) {
-                            continue;
-                        }
-
-                        final double[] override = overrides.get(orientation);
-                        if (override == null) {
-                            continue;
-                        }
-
-                        setBoundingBox(shapeObject, override);
-                        updated = true;
-                    }
-
-                    if (!updated) {
-                        throw new IllegalStateException("Could not adjust ladder shapes using fallback path for modern versions");
-                    }
+                if (!updated) {
+                    throw new IllegalStateException("Could not adjust ladder shapes for modern versions");
                 }
             } else
             {
@@ -286,6 +205,93 @@ public class BlockCollisionChanges {
             throw new IllegalStateException("Could not find initCache method in " + voxelShape.getName());
         }
         initCache.invoke(voxelShapeArray);
+    }
+
+    private static boolean updateShapesMap(final Map<Object, Object> shapes, final Map<String, double[]> overrides) throws ReflectiveOperationException {
+        if (shapes == null) {
+            return false;
+        }
+
+        final Class<?> directionClass = Class.forName("net.minecraft.core.Direction");
+        final Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
+        final Class<?> blockClass = Class.forName("net.minecraft.world.level.block.Block");
+
+        Method shapesBoxMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
+        if (shapesBoxMethod != null) {
+            shapesBoxMethod.setAccessible(true);
+        }
+
+        Method blockBoxMethod = ReflectionUtil.findMethod(blockClass, new String[]{"box", "a"}, double.class, double.class, double.class, double.class, double.class, double.class);
+        if (blockBoxMethod != null) {
+            blockBoxMethod.setAccessible(true);
+        }
+
+        Method shapesCreateMethod = null;
+        Constructor<?> aabbConstructor = null;
+        if (shapesBoxMethod == null) {
+            final Class<?> aabbClass = Class.forName("net.minecraft.world.phys.AABB");
+            shapesCreateMethod = ReflectionUtil.findMethod(shapesClass, new String[]{"create", "a"}, aabbClass);
+            if (shapesCreateMethod != null) {
+                shapesCreateMethod.setAccessible(true);
+                aabbConstructor = aabbClass.getDeclaredConstructor(double.class, double.class, double.class, double.class, double.class, double.class);
+                aabbConstructor.setAccessible(true);
+            }
+        }
+
+        final Method directionValueOf = directionClass.getMethod("valueOf", String.class);
+        directionValueOf.setAccessible(true);
+
+        boolean updated = false;
+        try {
+            for (Map.Entry<String, double[]> entry : overrides.entrySet()) {
+                final Object direction = directionValueOf.invoke(null, entry.getKey());
+                final Object voxelShape = createVoxelShape(shapesBoxMethod, blockBoxMethod, shapesCreateMethod, aabbConstructor, entry.getValue());
+                shapes.put(direction, voxelShape);
+                updated = true;
+            }
+        } catch (UnsupportedOperationException ex) {
+            return false;
+        }
+        return updated;
+    }
+
+    private static boolean updateShapeConstants(final Class<?> blockLadderClass, final Map<String, double[]> overrides) throws ReflectiveOperationException {
+        final Class<?> voxelShapeInterface = Class.forName("net.minecraft.world.phys.shapes.VoxelShape");
+
+        boolean updated = false;
+        for (Field field : blockLadderClass.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            field.setAccessible(true);
+            final Object shapeObject = field.get(null);
+            if (shapeObject == null) {
+                continue;
+            }
+            if (!voxelShapeInterface.isAssignableFrom(shapeObject.getClass())
+                    && !shapeObject.getClass().getSimpleName().contains("VoxelShape")) {
+                continue;
+            }
+
+            final double[] currentBounds = getBoundingBoxValues(shapeObject);
+            if (currentBounds == null) {
+                continue;
+            }
+
+            final String orientation = detectOrientation(currentBounds);
+            if (orientation == null) {
+                continue;
+            }
+
+            final double[] override = overrides.get(orientation);
+            if (override == null) {
+                continue;
+            }
+
+            setBoundingBox(shapeObject, override);
+            updated = true;
+        }
+        return updated;
     }
 
     private static double[] getBoundingBoxValues(final Object boundingBox) throws ReflectiveOperationException {
