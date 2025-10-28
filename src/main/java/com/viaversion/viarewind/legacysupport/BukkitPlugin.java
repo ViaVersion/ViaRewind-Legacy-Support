@@ -19,15 +19,15 @@
 package com.viaversion.viarewind.legacysupport;
 
 import com.viaversion.viarewind.legacysupport.feature.AnvilCostFix;
-import com.viaversion.viarewind.legacysupport.feature.BlockCollisionChanges;
-import com.viaversion.viarewind.legacysupport.versioninfo.VersionInformer;
-import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.feature.AreaEffectCloudEmulator;
-import com.viaversion.viarewind.legacysupport.feature.SlimeBounceEmulator;
+import com.viaversion.viarewind.legacysupport.feature.BlockCollisionChanges;
+import com.viaversion.viarewind.legacysupport.feature.BlockPlaceSoundEmulator;
 import com.viaversion.viarewind.legacysupport.feature.BrewingInteractionEmulator;
 import com.viaversion.viarewind.legacysupport.feature.ElytraVelocityEmulator;
 import com.viaversion.viarewind.legacysupport.feature.EnchantingGuiEmulator;
-import com.viaversion.viarewind.legacysupport.feature.BlockPlaceSoundEmulator;
+import com.viaversion.viarewind.legacysupport.feature.SlimeBounceEmulator;
+import com.viaversion.viarewind.legacysupport.versioninfo.VersionInformer;
+import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;

@@ -18,10 +18,13 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viarewind.legacysupport.util.NMSUtil;
 import com.viaversion.viaversion.api.Via;
-import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -30,10 +33,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 public class AreaEffectCloudEmulator implements Listener {
@@ -47,8 +46,8 @@ public class AreaEffectCloudEmulator implements Listener {
                 final Location location = cloud.getLocation();
                 final float radius = cloud.getRadius();
                 final Object data = NMSUtil.NEWER_THAN_V1_20_5
-                        ? cloud.getColor()
-                        : null;
+                    ? cloud.getColor()
+                    : null;
 
                 float area = (float) Math.PI * radius * radius;
 
@@ -68,11 +67,11 @@ public class AreaEffectCloudEmulator implements Listener {
                         affectedPlayers.stream().filter(player -> player.getWorld() == location.getWorld()).forEach(player -> {
 
                             player.spawnParticle(
-                                    cloud.getParticle(),
-                                    location.getX() + f3, location.getY(), location.getZ() + f6,
-                                    0,
-                                    r / 255f, g / 255f, b / 255f,
-                                    data
+                                cloud.getParticle(),
+                                location.getX() + f3, location.getY(), location.getZ() + f6,
+                                0,
+                                r / 255f, g / 255f, b / 255f,
+                                data
                             );
                         });
                     }

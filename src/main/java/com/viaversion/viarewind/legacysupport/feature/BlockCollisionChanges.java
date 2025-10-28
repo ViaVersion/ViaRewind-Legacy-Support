@@ -20,7 +20,6 @@ package com.viaversion.viarewind.legacysupport.feature;
 
 import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,8 +30,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
-import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.getNMSBlockClass;
+import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.getFieldAccessible;
 
 public class BlockCollisionChanges {
 
@@ -79,8 +78,7 @@ public class BlockCollisionChanges {
                     field.setAccessible(true);
                     final Object value = field.get(null);
                     if (value instanceof Map<?, ?>) {
-                        @SuppressWarnings("unchecked")
-                        final Map<Object, Object> casted = (Map<Object, Object>) value;
+                        @SuppressWarnings("unchecked") final Map<Object, Object> casted = (Map<Object, Object>) value;
                         shapesMap = casted;
                         break;
                     }
@@ -98,8 +96,7 @@ public class BlockCollisionChanges {
                 if (!updated) {
                     throw new IllegalStateException("Could not adjust ladder shapes for modern versions");
                 }
-            } else
-            {
+            } else {
                 final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
                 final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
                 final boolean pre1_16_4 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4);
@@ -200,7 +197,7 @@ public class BlockCollisionChanges {
         final Field isEmpty = getFieldAccessible(voxelShape, "isEmpty");
         isEmpty.setBoolean(voxelShapeArray, true);
 
-        final Method initCache = ReflectionUtil.findMethod(voxelShape, new String[]{ "initCache", "moonrise$initCache" });
+        final Method initCache = ReflectionUtil.findMethod(voxelShape, new String[]{"initCache", "moonrise$initCache"});
         if (initCache == null) {
             throw new IllegalStateException("Could not find initCache method in " + voxelShape.getName());
         }
@@ -269,7 +266,7 @@ public class BlockCollisionChanges {
                 continue;
             }
             if (!voxelShapeInterface.isAssignableFrom(shapeObject.getClass())
-                    && !shapeObject.getClass().getSimpleName().contains("VoxelShape")) {
+                && !shapeObject.getClass().getSimpleName().contains("VoxelShape")) {
                 continue;
             }
 
@@ -398,8 +395,8 @@ public class BlockCollisionChanges {
         if (blockBoxMethod != null) {
             final double scale = 16.0D;
             return blockBoxMethod.invoke(null,
-                    values[0] * scale, values[1] * scale, values[2] * scale,
-                    values[3] * scale, values[4] * scale, values[5] * scale);
+                values[0] * scale, values[1] * scale, values[2] * scale,
+                values[3] * scale, values[4] * scale, values[5] * scale);
         }
         throw new IllegalStateException("Unable to create voxel shape for ladder bounding box.");
     }

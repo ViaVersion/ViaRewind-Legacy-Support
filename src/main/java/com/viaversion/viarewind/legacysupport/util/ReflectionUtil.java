@@ -18,7 +18,6 @@
 package com.viaversion.viarewind.legacysupport.util;
 
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -80,7 +79,8 @@ public class ReflectionUtil {
             Field field = null;
             try {
                 field = clazz.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException ignored) {} // Cache non-existing field too
+            } catch (NoSuchFieldException ignored) {
+            } // Cache non-existing field too
             fieldCache.put(key, field);
             return field;
         }

@@ -18,9 +18,11 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
-import com.viaversion.viaversion.api.Via;
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
+import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -36,11 +38,11 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-
-import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.*;
-import static com.viaversion.viarewind.legacysupport.util.NMSUtil.*;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.getBlockPositionClass;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.getGamePacketClass;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.getSoundCategoryClass;
+import static com.viaversion.viarewind.legacysupport.util.NMSUtil.sendPacket;
+import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.getMethod;
 
 @SuppressWarnings("unchecked")
 public class BlockPlaceSoundEmulator implements Listener {
@@ -81,51 +83,19 @@ public class BlockPlaceSoundEmulator implements Listener {
         }
     }
 
-    @EventHandler
-    public void onBlockPlace(BlockPlaceEvent e) {
-        final Player player = e.getPlayer();
-        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) return;
-
-        if (Via.getAPI().getServerVersion().lowestSupportedProtocolVersion().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
-            player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
-        } else {
-            try {
-                playBlockPlaceSoundNMS(player, e.getBlock());
-            } catch (Exception exception) {
-                Via.getPlatform().getLogger().log(Level.SEVERE, "Could not play block place sound.", exception);
-            }
-        }
-    }
-
-    private void onItemPickUp(Player player) {
-        final float volume = 0.2f;
-        final float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
-
-        playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, volume, pitch);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
-        final float volume = 0.1f;
-        final float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
-
-        playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, volume, pitch);
-    }
-
     private static void playSound(final Location loc, final Sound sound, final float volume, final float pitch) {
         Bukkit.getOnlinePlayers().stream()
-                .filter(p -> p.getWorld() == loc.getWorld())
-                .filter(p -> p.getLocation().distanceSquared(loc) < (double) 16 * (double) 16)
-                .filter(p -> Via.getAPI().getPlayerVersion(p) <= 47)
-                .forEach(p -> {
-                    if (isSoundCategory) {
-                        p.playSound(loc, sound, SoundCategory.valueOf("PLAYERS"), volume, pitch);
-                    } else {
-                        p.playSound(loc, sound, volume, pitch);
-                    }
-                });
+            .filter(p -> p.getWorld() == loc.getWorld())
+            .filter(p -> p.getLocation().distanceSquared(loc) < (double) 16 * (double) 16)
+            .filter(p -> Via.getAPI().getPlayerVersion(p) <= 47)
+            .forEach(p -> {
+                if (isSoundCategory) {
+                    p.playSound(loc, sound, SoundCategory.valueOf("PLAYERS"), volume, pitch);
+                } else {
+                    p.playSound(loc, sound, volume, pitch);
+                }
+            });
     }
-
 
     // 1.8.8 -> 1.16.5
     private static void playBlockPlaceSoundNMS(Player player, Block block) throws Exception {
@@ -198,13 +168,13 @@ public class BlockPlaceSoundEmulator implements Listener {
     private static void playSound(Player player, Object soundEffect, Object soundCategory, double x, double y, double z, float volume, float pitch) {
         try {
             Object packet = getGamePacketClass("PacketPlayOutNamedSoundEffect").getConstructor(
-                    soundEffect.getClass(), soundCategory.getClass(),
-                    double.class, double.class, double.class,
-                    float.class, float.class
+                soundEffect.getClass(), soundCategory.getClass(),
+                double.class, double.class, double.class,
+                float.class, float.class
             ).newInstance(
-                    soundEffect, soundCategory,
-                    x, y, z,
-                    volume, pitch
+                soundEffect, soundCategory,
+                x, y, z,
+                volume, pitch
             );
 
             // Volume = 1
@@ -213,5 +183,36 @@ public class BlockPlaceSoundEmulator implements Listener {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent e) {
+        final Player player = e.getPlayer();
+        if (Via.getAPI().getPlayerProtocolVersion(player).newerThanOrEqualTo(ProtocolVersion.v1_9)) return;
+
+        if (Via.getAPI().getServerVersion().lowestSupportedProtocolVersion().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+            player.playSound(e.getBlockPlaced().getLocation(), e.getBlock().getBlockData().getSoundGroup().getPlaceSound(), 1.0f, 0.8f);
+        } else {
+            try {
+                playBlockPlaceSoundNMS(player, e.getBlock());
+            } catch (Exception exception) {
+                Via.getPlatform().getLogger().log(Level.SEVERE, "Could not play block place sound.", exception);
+            }
+        }
+    }
+
+    private void onItemPickUp(Player player) {
+        final float volume = 0.2f;
+        final float pitch = (float) ((Math.random() - Math.random()) * 0.7f + 1.0f) * 2.0f;
+
+        playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, volume, pitch);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onExperienceOrbPickup(PlayerExpChangeEvent e) {
+        final float volume = 0.1f;
+        final float pitch = (float) (0.5f * ((Math.random() - Math.random()) * 0.7f + 1.8f));
+
+        playSound(e.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, volume, pitch);
     }
 }

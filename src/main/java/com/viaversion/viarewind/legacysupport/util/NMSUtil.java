@@ -19,22 +19,20 @@ package com.viaversion.viarewind.legacysupport.util;
 
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.failSafeGetClass;
 
 public class NMSUtil {
 
+    public static final boolean NEWER_THAN_V1_20_5 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_20_5);
     public static String nmsVersionPackage;
     private static Field playerConnectionField;
-
-    public static final boolean NEWER_THAN_V1_20_5 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_20_5);
 
     static {
         if (BukkitPlugin.getInstance().getServerProtocol().olderThan(ProtocolVersion.v1_17)) {
@@ -130,7 +128,7 @@ public class NMSUtil {
             return;
         }
         try {
-            final Method sendPacket = ReflectionUtil.findMethod(playerConnection.getClass(), new String[] {"sendPacket", "a"}, getPacketClass());
+            final Method sendPacket = ReflectionUtil.findMethod(playerConnection.getClass(), new String[]{"sendPacket", "a"}, getPacketClass());
             sendPacket.invoke(playerConnection, packet);
         } catch (IllegalAccessException | InvocationTargetException | NullPointerException e) {
             BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to send packet to player", e);

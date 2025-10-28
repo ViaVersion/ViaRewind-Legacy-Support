@@ -19,6 +19,7 @@ package com.viaversion.viarewind.legacysupport.feature;
 
 import com.viaversion.viarewind.legacysupport.BukkitPlugin;
 import com.viaversion.viarewind.legacysupport.util.NMSUtil;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -27,7 +28,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
-import java.util.logging.Level;
 
 public class AnvilCostFix implements Listener {
     @EventHandler

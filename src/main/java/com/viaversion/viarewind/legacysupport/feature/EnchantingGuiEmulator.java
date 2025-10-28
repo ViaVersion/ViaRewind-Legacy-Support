@@ -20,6 +20,7 @@ package com.viaversion.viarewind.legacysupport.feature;
 
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
+import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,8 +31,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-
-import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class EnchantingGuiEmulator implements Listener {

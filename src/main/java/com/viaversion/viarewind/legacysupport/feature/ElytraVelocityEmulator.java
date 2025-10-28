@@ -23,15 +23,14 @@ import com.viaversion.viarewind.legacysupport.util.NMSUtil;
 import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.Via;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
-
-import java.lang.reflect.Method;
-import java.util.logging.Level;
 
 @SuppressWarnings("unchecked")
 public class ElytraVelocityEmulator implements Listener {
