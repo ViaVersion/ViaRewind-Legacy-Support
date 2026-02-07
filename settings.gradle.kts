@@ -2,10 +2,11 @@ pluginManagement {
     repositories {
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.florianreuth.de/releases")
     }
 
     plugins {
-        id("de.florianmichael.baseproject.BaseProject") version "1.1.1"
+        id("de.florianreuth.baseproject") version "2.0.0"
         id("io.papermc.hangar-publish-plugin") version "0.1.3"
     }
 }

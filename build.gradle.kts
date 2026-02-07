@@ -1,9 +1,9 @@
-import de.florianmichael.baseproject.*
+import de.florianreuth.baseproject.*
 
 plugins {
     `java-library`
     id("io.papermc.hangar-publish-plugin")
-    id("de.florianmichael.baseproject.BaseProject")
+    id("de.florianreuth.baseproject")
 }
 
 repositories {

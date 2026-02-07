@@ -4,7 +4,7 @@ description: ${description}
 main: com.viaversion.viarewind.legacysupport.BukkitPlugin
 api-version: 1.13
 
-authors: [FlorianMichael/EnZaXD, Gerrygames]
+authors: [EnZaXD, Gerrygames]
 website: https://github.com/ViaVersion/ViaRewind-Legacy-Support
 
 depend: [ViaRewind]
