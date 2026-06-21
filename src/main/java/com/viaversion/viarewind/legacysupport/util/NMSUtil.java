@@ -30,7 +30,9 @@ import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.failSaf
 
 public class NMSUtil {
 
+    public static final boolean NEWER_THAN_V26_1 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v26_1);
     public static final boolean NEWER_THAN_V1_20_5 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_20_5);
+    public static final boolean NEWER_THAN_V1_17 = BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17);
     public static String nmsVersionPackage;
     private static Field playerConnectionField;
 
@@ -41,7 +43,9 @@ public class NMSUtil {
     }
 
     public static Class<?> getBlockPositionClass() {
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V26_1) {
+            return failSafeGetClass("net.minecraft.core.BlockPos");
+        } else if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.core.BlockPosition");
         } else {
             return getLegacyNMSClass("BlockPosition");
@@ -49,7 +53,7 @@ public class NMSUtil {
     }
 
     public static Class<?> getNMSBlockClass(final String name) {
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.world.level.block." + name);
         } else {
             return getLegacyNMSClass(name);
@@ -57,7 +61,9 @@ public class NMSUtil {
     }
 
     public static Class getSoundCategoryClass() { // Bypass generics
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V26_1) {
+            return failSafeGetClass("net.minecraft.sounds.SoundSource");
+        } else if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.sounds.SoundCategory");
         } else {
             return getLegacyNMSClass("SoundCategory");
@@ -65,7 +71,7 @@ public class NMSUtil {
     }
 
     public static Class<?> getPacketClass() {
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.network.protocol.Packet");
         } else {
             return getLegacyNMSClass("Packet");
@@ -73,7 +79,7 @@ public class NMSUtil {
     }
 
     public static Class<?> getGamePacketClass(final String packet) {
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.network.protocol.game." + packet);
         } else {
             return getLegacyNMSClass(packet);
@@ -81,7 +87,9 @@ public class NMSUtil {
     }
 
     public static Class<?> getPlayerConnectionClass() {
-        if (BukkitPlugin.getInstance().getServerProtocol().newerThanOrEqualTo(ProtocolVersion.v1_17)) {
+        if (NEWER_THAN_V26_1) {
+            return failSafeGetClass("net.minecraft.server.network.ServerGamePacketListenerImpl");
+        } else if (NEWER_THAN_V1_17) {
             return failSafeGetClass("net.minecraft.server.network.PlayerConnection");
         } else {
             return getLegacyNMSClass("PlayerConnection");
