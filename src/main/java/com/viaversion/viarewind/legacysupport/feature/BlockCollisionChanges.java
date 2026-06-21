@@ -39,7 +39,7 @@ public class BlockCollisionChanges {
     public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
         try {
             final String BlockWaterLilyClassName = NMSUtil.NEWER_THAN_V26_1 ? "LilyPadBlock" : "BlockWaterLily";
-            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_2) ? "b" : "a";
+            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_3) ? "b" : "a";
             final Field boundingBoxField = getFieldAccessible(getNMSBlockClass(BlockWaterLilyClassName), boundingBoxFieldName);
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
@@ -50,8 +50,8 @@ public class BlockCollisionChanges {
 
     public static void fixCarpet(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_2) ? "b" : "a";
-            final String blockCarpetClassName = NMSUtil.NEWER_THAN_V26_1 ? "CarpetBlock" : "BlockCarpet";
+            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_3) ? "b" : "a";
+            final String blockCarpetClassName = serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_17) ? "CarpetBlock" : "BlockCarpet";
             final Field boundingBoxField = getFieldAccessible(getNMSBlockClass(blockCarpetClassName), boundingBoxFieldName);
 
             setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
