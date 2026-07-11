@@ -34,9 +34,15 @@ import static com.viaversion.viarewind.legacysupport.util.NMSUtil.getNMSBlockCla
 import static com.viaversion.viarewind.legacysupport.util.ReflectionUtil.getFieldAccessible;
 
 public class BlockCollisionChanges {
-
     public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
         try {
+            // Modern Mojang runtime (1.20.5+ including 26.x)
+            if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
+                logger.warning("Skipping lily pad collision fix on Mojang 1.20.5+ (SHAPE is static final).");
+                return;
+            }
+
+            // Legacy path (pre 1.20.5)
             final Field boundingBoxField = getFieldAccessible(getNMSBlockClass("BlockWaterLily"), serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
@@ -44,9 +50,14 @@ public class BlockCollisionChanges {
             logger.log(Level.SEVERE, "Could not fix lily pad bounding box.", ex);
         }
     }
-
     public static void fixCarpet(final Logger logger, final ProtocolVersion serverVersion) {
         try {
+            // Modern Mojang runtime (1.20.5+ including 26.x)
+            if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
+                logger.warning("Skipping carpet collision fix on Mojang 1.20.5+ (SHAPE is static final).");
+                return;
+            }
+            // Legacy path (pre 1.20.5)
             final Class<?> blockCarpetClass = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4) ? getNMSBlockClass("BlockCarpet") : getNMSBlockClass("CarpetBlock");
 
             final Field boundingBoxField = getFieldAccessible(blockCarpetClass, serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
@@ -59,43 +70,46 @@ public class BlockCollisionChanges {
     public static void fixLadder(final Logger logger, final ProtocolVersion serverVersion) {
         try {
             if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
-                final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
+                
+                // Mojang class name
+                Class<?> ladderBlockClass = Class.forName("net.minecraft.world.level.block.LadderBlock");
 
-                final Map<String, double[]> overrides = new HashMap<String, double[]>();
-                overrides.put("EAST", new double[]{0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D});
-                overrides.put("WEST", new double[]{0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D});
-                overrides.put("SOUTH", new double[]{0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D});
-                overrides.put("NORTH", new double[]{0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D});
+                // Shapes.box(...) for VoxelShape creation
+                Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
+                Method boxMethod = shapesClass.getMethod(
+                        "box",
+                        double.class, double.class, double.class,
+                        double.class, double.class, double.class
+                );
 
-                Map<Object, Object> shapesMap = null;
-                for (Field field : blockLadderClass.getDeclaredFields()) {
-                    if (!Modifier.isStatic(field.getModifiers())) {
-                        continue;
-                    }
-                    if (!Map.class.isAssignableFrom(field.getType())) {
-                        continue;
-                    }
-                    field.setAccessible(true);
-                    final Object value = field.get(null);
-                    if (value instanceof Map<?, ?>) {
-                        @SuppressWarnings("unchecked") final Map<Object, Object> casted = (Map<Object, Object>) value;
-                        shapesMap = casted;
-                        break;
-                    }
-                }
+            Class<?> directionClass = Class.forName("net.minecraft.core.Direction");
+                // Direction enum
+                Object EAST  = directionClass.getField("EAST").get(null);
+                Object WEST  = directionClass.getField("WEST").get(null);
+                Object SOUTH = directionClass.getField("SOUTH").get(null);
+                Object NORTH = directionClass.getField("NORTH").get(null);
 
-                boolean updated = false;
-                if (shapesMap != null) {
-                    updated = updateShapesMap(shapesMap, overrides);
-                }
+                // Build shapes
+                Object eastShape = boxMethod.invoke(null, 0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D);
+                Object westShape = boxMethod.invoke(null, 0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+                Object southShape = boxMethod.invoke(null, 0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D);
+                Object northShape = boxMethod.invoke(null, 0.0D, 0.0D, 0.875D, 1.0D, 1.0D, 1.0D);
 
-                if (!updated) {
-                    updated = updateShapeConstants(blockLadderClass, overrides);
-                }
+                // Replace LadderBlock.SHAPES contents (cannot reassign final field!)
+                Field shapesField = ladderBlockClass.getDeclaredField("SHAPES");
+                shapesField.setAccessible(true);
 
-                if (!updated) {
-                    throw new IllegalStateException("Could not adjust ladder shapes for modern versions");
-                }
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> shapesMap = (Map<Object, Object>) shapesField.get(null);
+
+                shapesMap.clear();
+                shapesMap.put(EAST, eastShape);
+                shapesMap.put(WEST, westShape);
+                shapesMap.put(SOUTH, southShape);
+                shapesMap.put(NORTH, northShape);
+
+                logger.info("Successfully patched ladder collision shapes for Mojang 26.2+");
+                return;
             } else {
                 final boolean pre1_12_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_12_2);
                 final boolean pre1_13_2 = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_13_2);
