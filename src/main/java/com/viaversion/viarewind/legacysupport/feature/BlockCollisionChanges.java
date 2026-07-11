@@ -38,7 +38,47 @@ public class BlockCollisionChanges {
         try {
             // Modern Mojang runtime (1.20.5+ including 26.x)
             if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
-                logger.warning("Skipping lily pad collision fix on Mojang 1.20.5+ (SHAPE is static final).");
+                // Try both names depending on version
+                Class<?> lilyClass;
+                try {
+                    lilyClass = Class.forName("net.minecraft.world.level.block.WaterlilyBlock");
+                } catch (ClassNotFoundException ex) {
+                    lilyClass = Class.forName("net.minecraft.world.level.block.LilyPadBlock");
+                }
+
+                // Build replacement VoxelShape (old-style lily pad box)
+                Class<?> shapesClass = Class.forName("net.minecraft.world.phys.shapes.Shapes");
+                Method boxMethod = shapesClass.getMethod(
+                        "box",
+                        double.class, double.class, double.class,
+                        double.class, double.class, double.class
+                );
+
+                Object newShape = boxMethod.invoke(null,
+                        0.0625D, 0.0D,      0.0625D,
+                        0.9375D, 0.015625D, 0.9375D
+                );
+
+                // Bypass: use Unsafe to smash static final SHAPE
+                Field shapeField = lilyClass.getDeclaredField("SHAPE");
+                shapeField.setAccessible(true);
+
+                Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+                Field theUnsafeField = unsafeClass.getDeclaredField("theUnsafe");
+                theUnsafeField.setAccessible(true);
+                Object unsafe = theUnsafeField.get(null);
+
+                Method staticFieldOffset = unsafeClass.getMethod("staticFieldOffset", Field.class);
+                Method staticFieldBase   = unsafeClass.getMethod("staticFieldBase", Field.class);
+                Method putObjectVolatile = unsafeClass.getMethod("putObjectVolatile", Object.class, long.class, Object.class);
+
+                long offset    = (long) staticFieldOffset.invoke(unsafe, shapeField);
+                Object baseObj = staticFieldBase.invoke(unsafe, shapeField);
+
+                // This actually overwrites the static final field
+                putObjectVolatile.invoke(unsafe, baseObj, offset, newShape);
+
+                logger.info("Patched lily pad SHAPE for 1.20.5+ via Unsafe bypass");
                 return;
             }
 
