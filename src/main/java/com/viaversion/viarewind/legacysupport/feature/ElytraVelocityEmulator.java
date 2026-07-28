@@ -41,7 +41,7 @@ public class ElytraVelocityEmulator implements Listener {
             if (nmsPlayer == null) return false;
 
             try {
-                final Method getFlag = ReflectionUtil.getMethod(nmsPlayer.getClass(), "getFlag", int.class);
+                final Method getFlag = ReflectionUtil.findMethod(nmsPlayer.getClass(), new String[]{"getSharedFlag", "getFlag"}, int.class);
                 return (boolean) getFlag.invoke(nmsPlayer, 7);
             } catch (Exception e) {
                 BukkitPlugin.getInstance().getLogger().log(Level.SEVERE, "Failed to get player flag", e);

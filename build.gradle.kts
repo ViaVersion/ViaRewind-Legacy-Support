@@ -16,7 +16,7 @@ setupProject()
 setupViaPublishing()
 
 dependencies {
-    compileOnly("com.viaversion:viaversion-api:4.10.0")
+    compileOnly("com.viaversion:viaversion-api:5.10.0")
     compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
 }
 

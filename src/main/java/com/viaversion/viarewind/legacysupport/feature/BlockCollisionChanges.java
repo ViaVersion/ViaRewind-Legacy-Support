@@ -18,6 +18,7 @@
 
 package com.viaversion.viarewind.legacysupport.feature;
 
+import com.viaversion.viarewind.legacysupport.util.NMSUtil;
 import com.viaversion.viarewind.legacysupport.util.ReflectionUtil;
 import com.viaversion.viaversion.api.protocol.version.ProtocolVersion;
 import java.lang.reflect.Constructor;
@@ -37,7 +38,9 @@ public class BlockCollisionChanges {
 
     public static void fixLilyPad(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final Field boundingBoxField = getFieldAccessible(getNMSBlockClass("BlockWaterLily"), serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
+            final String BlockWaterLilyClassName = NMSUtil.NEWER_THAN_V26_1 ? "LilyPadBlock" : "BlockWaterLily";
+            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_3) ? "b" : "a";
+            final Field boundingBoxField = getFieldAccessible(getNMSBlockClass(BlockWaterLilyClassName), boundingBoxFieldName);
 
             setBoundingBox(boundingBoxField.get(null), 0.0625, 0.0, 0.0625, 0.9375, 0.015625, 0.9375);
         } catch (Exception ex) {
@@ -47,9 +50,10 @@ public class BlockCollisionChanges {
 
     public static void fixCarpet(final Logger logger, final ProtocolVersion serverVersion) {
         try {
-            final Class<?> blockCarpetClass = serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_16_4) ? getNMSBlockClass("BlockCarpet") : getNMSBlockClass("CarpetBlock");
+            final String boundingBoxFieldName = NMSUtil.NEWER_THAN_V26_1 ? "SHAPE" : serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_3) ? "b" : "a";
+            final String blockCarpetClassName = serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_17) ? "CarpetBlock" : "BlockCarpet";
+            final Field boundingBoxField = getFieldAccessible(getNMSBlockClass(blockCarpetClassName), boundingBoxFieldName);
 
-            final Field boundingBoxField = getFieldAccessible(blockCarpetClass, serverVersion.olderThanOrEqualTo(ProtocolVersion.v1_20_2) ? "a" : "b");
             setBoundingBox(boundingBoxField.get(0), 0.0D, -0.0000001D, 0.0D, 1.0D, 0.0000001D, 1.0D);
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Could not fix carpet bounding box.", ex);
@@ -59,9 +63,9 @@ public class BlockCollisionChanges {
     public static void fixLadder(final Logger logger, final ProtocolVersion serverVersion) {
         try {
             if (serverVersion.newerThanOrEqualTo(ProtocolVersion.v1_20_5)) {
-                final Class<?> blockLadderClass = getNMSBlockClass("BlockLadder");
+                final Class<?> blockLadderClass = getNMSBlockClass(NMSUtil.NEWER_THAN_V26_1 ? "LadderBlock" : "BlockLadder");
 
-                final Map<String, double[]> overrides = new HashMap<String, double[]>();
+                final Map<String, double[]> overrides = new HashMap<>();
                 overrides.put("EAST", new double[]{0.0D, 0.0D, 0.0D, 0.125D, 1.0D, 1.0D});
                 overrides.put("WEST", new double[]{0.875D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D});
                 overrides.put("SOUTH", new double[]{0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 0.125D});
@@ -187,7 +191,7 @@ public class BlockCollisionChanges {
         // Handle Paper voxel shape caching by clearing the cache
         final Class<?> voxelShape = voxelShapeArray.getClass().getSuperclass();
 
-        final Field shape = getFieldAccessible(voxelShape, "a");
+        final Field shape = getFieldAccessible(voxelShape, NMSUtil.NEWER_THAN_V26_1 ? "shape" : "a");
         final Field cachedShapeData = getFieldAccessible(shape.getType(), "cachedShapeData");
         if (cachedShapeData == null) { // No Paper or too old version
             return;
