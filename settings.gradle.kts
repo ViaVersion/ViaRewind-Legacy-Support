@@ -7,7 +7,7 @@ pluginManagement {
 
     plugins {
         id("de.florianreuth.baseproject") version "3.0.0"
-        id("io.papermc.hangar-publish-plugin") version "0.1.3"
+        id("io.papermc.hangar-publish-plugin") version "0.1.4"
     }
 }
 
