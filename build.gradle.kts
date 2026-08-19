@@ -1,4 +1,8 @@
-import de.florianreuth.baseproject.*
+import de.florianreuth.baseproject.integration.branchName
+import de.florianreuth.baseproject.integration.latestCommitHash
+import de.florianreuth.baseproject.integration.latestCommitMessage
+import de.florianreuth.baseproject.setupProject
+import de.florianreuth.baseproject.setupViaPublishing
 
 plugins {
     `java-library`
@@ -20,10 +24,6 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
 }
 
-base {
-    archivesName.set("ViaRewind-Legacy-Support")
-}
-
 tasks {
     processResources {
         val projectVersion = project.version
@@ -39,7 +39,8 @@ val baseVersion = version as String
 val isRelease = !baseVersion.contains('-')
 val suffixedVersion = if (isRelease) baseVersion else baseVersion + "+" + System.getenv("GITHUB_RUN_NUMBER")
 val commitHash = latestCommitHash()
-val changelogContent = "[${commitHash}](https://github.com/ViaVersion/iaRewind-Legacy-Support/commit/${commitHash}) ${latestCommitMessage()}"
+val changelogContent =
+    "[${commitHash}](https://github.com/ViaVersion/iaRewind-Legacy-Support/commit/${commitHash}) ${latestCommitMessage()}"
 val isMainBranch = branch == "master"
 hangarPublish {
     publications.register("plugin") {
