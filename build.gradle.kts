@@ -1,27 +1,15 @@
-import de.florianreuth.baseproject.integration.branchName
-import de.florianreuth.baseproject.integration.latestCommitHash
-import de.florianreuth.baseproject.integration.latestCommitMessage
-import de.florianreuth.baseproject.setupProject
-import de.florianreuth.baseproject.setupViaPublishing
+import de.florianreuth.baseproject.viaRelease
 
 plugins {
     `java-library`
-    id("io.papermc.hangar-publish-plugin")
-    id("de.florianreuth.baseproject")
+    alias(libs.plugins.hangar.publish)
+    id("base.java")
+    id("via.maven_publish")
 }
-
-repositories {
-    maven("https://repo.viaversion.com")
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://repo.maven.apache.org/maven2/")
-}
-
-setupProject()
-setupViaPublishing()
 
 dependencies {
-    compileOnly("com.viaversion:viaversion-api:5.10.0")
-    compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
+    compileOnly(libs.viaversion.api)
+    compileOnly(libs.spigot.api)
 }
 
 tasks {
@@ -34,20 +22,13 @@ tasks {
     }
 }
 
-val branch = branchName()
-val baseVersion = version as String
-val isRelease = !baseVersion.contains('-')
-val suffixedVersion = if (isRelease) baseVersion else baseVersion + "+" + System.getenv("GITHUB_RUN_NUMBER")
-val commitHash = latestCommitHash()
-val changelogContent =
-    "[${commitHash}](https://github.com/ViaVersion/iaRewind-Legacy-Support/commit/${commitHash}) ${latestCommitMessage()}"
-val isMainBranch = branch == "master"
+val release = viaRelease("master")
 hangarPublish {
     publications.register("plugin") {
-        version.set(suffixedVersion)
+        version.set(release.version)
         id.set("ViaRewindLegacySupport")
-        channel.set(if (isRelease) "Release" else if (isMainBranch) "Snapshot" else "Alpha")
-        changelog.set(changelogContent)
+        channel.set(release.hangarChannel)
+        changelog.set(release.commitChangelog)
         apiKey.set(System.getenv("HANGAR_TOKEN"))
         platforms {
             paper {

@@ -1,0 +1,7 @@
+[libraries]
+foojay-resolver-convention-plugin = { module = "org.gradle.toolchains.foojay-resolver-convention:org.gradle.toolchains.foojay-resolver-convention.gradle.plugin", version = "1.0.0" }
+viaversion-api = { module = "com.viaversion:viaversion-api", version = "5.10.0" }
+spigot-api = { module = "org.spigotmc:spigot-api", version = "1.16.5-R0.1-SNAPSHOT" }
+
+[plugins]
+hangar-publish = { id = "io.papermc.hangar-publish-plugin", version = "0.1.4" }
